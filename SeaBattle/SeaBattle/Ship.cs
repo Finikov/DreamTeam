@@ -33,13 +33,20 @@ namespace SeaBattle
         public ShipType Type { get; set; }
         public ShipStatus Status { get; set; } = ShipStatus.Full;
 
+        private int _health;
+
         private ShipCell[] _cells;
+
+        public ShipStatus Injury()
+        {
+           return Status = (--_health) <= 0 ? ShipStatus.Destroyed : ShipStatus.Damaged;
+        }
 
         public Ship(ShipType type)
         {
             Type = type;
             _cells = new ShipCell[(int)Type];
-
+            _health = (int) Type;
         }
     }
 }

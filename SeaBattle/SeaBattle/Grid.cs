@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,8 +21,8 @@ namespace SeaBattle
 
     enum GridState
     {
-        Empty,
-        Ship
+        Unbroken,
+        Damaged
     }
 
     struct GridCell
@@ -42,7 +43,7 @@ namespace SeaBattle
                 for (int j = 0; j < 10; j++)
                 {
                     _grid[i, j].Ship = null;
-                    _grid[i, j].State = GridState.Empty;
+                    _grid[i, j].State = GridState.Unbroken;
                 }
         }
 
@@ -53,19 +54,50 @@ namespace SeaBattle
             if ((int) ship.Type != pos.Count)
                 return -2;
 
+            if (_checkArea(pos) != 0)
+                return -3;
+           
             _ships.Add(ship);
             foreach (Point point in pos)
-            {
-                
                 _grid[point.X, point.Y].Ship = ship;
-                _grid[point.X, point.Y].State = GridState.Ship;
-            }
+
             return 0;
         }
 
-        private int _checkArea()
+
+        private int _checkArea(List<Point> pos)
         {
+            if (pos.Exists(a => a.X < 0 || a.Y < 0 || a.X > 10 || a.Y > 10)) //проверили: не выходит ли наша область за рамки поля
+                return -1;
+
+            var points = pos.OrderBy(a => a.X + a.Y).ToArray();
+            Point first = points.First();
+            Point last = points.Last();
+
+            //далее учитываем, что могут быть клетки на границе области
+
+            if ((first.X - 1) >= 0)
+                --first.X;
+
+            if ((first.Y - 1) >= 0)
+                --first.Y;
+
+            if ((last.X + 1) <= 10)
+                ++last.X;
+
+            if ((last.Y + 1) <= 10)
+                ++last.Y;
             
+            //проверяем свободность клеток
+
+            for (int i = first.X; i <= last.X; i++)
+                for (int j = first.Y; j <= last.Y; j++)
+                {
+                    if (_grid[i, j].Ship != null)
+                        return -2;
+                }
+
+            return 0;
         }
     }
 }

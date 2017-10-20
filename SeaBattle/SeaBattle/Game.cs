@@ -9,7 +9,8 @@ namespace SeaBattle
     enum ShotResult
     {
         Hit,
-        Miss
+        Miss,
+        Kill
     }
 
     class Game

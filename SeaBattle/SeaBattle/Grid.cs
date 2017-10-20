@@ -27,7 +27,7 @@ namespace SeaBattle
 
     struct GridCell
     {
-        public object Ship;
+        public Ship Ship;
         public GridState State;
     }
 
@@ -47,23 +47,43 @@ namespace SeaBattle
                 }
         }
 
-        public int AddShip(Ship ship, List<Point> pos)
+        public void AddShip(Ship ship, List<Point> pos)
         {
             if (_ships.Count >= _maxShips)
-                return -1;
+                throw GameException.MakeExeption(ErrorCode.RuleError, "Maximum number of ships. Can't add one else.");
+
             if ((int) ship.Type != pos.Count)
-                return -2;
+                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Invalid ship's settings.");
 
             if (_checkArea(pos) != 0)
-                return -3;
-           
+                throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Invalid ship's position.");
+
             _ships.Add(ship);
             foreach (Point point in pos)
                 _grid[point.X, point.Y].Ship = ship;
-
-            return 0;
         }
 
+        public void RemoveSHip(Ship ship)
+        {
+            
+        }
+
+        public ShotResult Shot(Point point)
+        {
+            GridCell cell = _grid[point.X, point.Y];
+            if (cell.State == GridState.Damaged)
+                throw GameException.MakeExeption(ErrorCode.RuleError, "This point have already been shooted.");
+
+            _grid[point.X, point.Y].State = GridState.Damaged;
+
+            Ship ship;
+            if ((ship = cell.Ship) != null)
+            {
+                ship.Injury();
+                return ShotResult.Hit;
+            }
+            return ShotResult.Miss;
+        }
 
         private int _checkArea(List<Point> pos)
         {
@@ -92,11 +112,8 @@ namespace SeaBattle
 
             for (int i = first.X; i <= last.X; i++)
                 for (int j = first.Y; j <= last.Y; j++)
-                {
                     if (_grid[i, j].Ship != null)
-                        return -2;
-                }
-
+                        return -1;
             return 0;
         }
     }

@@ -21,10 +21,10 @@ namespace SeaBattle
         Destroyed
     }
 
-    struct ShipCell
+    /*struct ShipCell
     {
         public Point Position;
-    }
+    }*/
 
     class Ship
     {
@@ -35,7 +35,7 @@ namespace SeaBattle
 
         private int _health;
 
-        private ShipCell[] _cells;
+        //private ShipCell[] _cells;
 
         public ShipStatus Injury()
         {
@@ -45,7 +45,7 @@ namespace SeaBattle
         public Ship(ShipType type)
         {
             Type = type;
-            _cells = new ShipCell[(int)Type];
+            //_cells = new ShipCell[(int)Type];
             _health = (int) Type;
         }
     }

@@ -34,7 +34,7 @@ namespace SeaBattle
     class Grid
     {
         private int _maxShips = 10;
-        private List<Ship> _ships = new List<Ship>();
+        private List<Tuple<Ship, List<Point>>> _ships = new List<Tuple<Ship, List<Point>>>();//Храним список кораблей в виде кортежей (корабль, список, занимаемых им ячеек)
         private GridCell[,] _grid = new GridCell[10, 10];
 
         public Grid()
@@ -58,14 +58,27 @@ namespace SeaBattle
             if (_checkArea(pos) != 0)
                 throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Invalid ship's position.");
 
-            _ships.Add(ship);
+            _ships.Add(Tuple.Create(ship, pos));
             foreach (Point point in pos)
                 _grid[point.X, point.Y].Ship = ship;
         }
 
         public void RemoveSHip(Ship ship)
         {
-            
+            if (ship == null)
+                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Try to remove the ship that does not exist.");
+
+            int i = 0;
+            while (i < _ships.Count && _ships[i].Item1 != ship)
+                i++;
+
+            if (i >=_ships.Count)
+                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Ship was not found to remove.");
+
+            foreach (Point point in _ships[i].Item2)
+                _grid[point.X, point.Y].Ship = null;
+                   
+            _ships.RemoveAt(i);
         }
 
         public ShotResult Shot(Point point)
@@ -79,11 +92,14 @@ namespace SeaBattle
             Ship ship;
             if ((ship = cell.Ship) != null)
             {
-                ship.Injury();
-                return ShotResult.Hit;
+                if (ship.Injury() == ShipStatus.Damaged)
+                    return ShotResult.Hit;
+                else
+                    return ShotResult.Kill;
             }
             return ShotResult.Miss;
         }
+
 
         private int _checkArea(List<Point> pos)
         {

@@ -21,21 +21,15 @@ namespace SeaBattle
         Destroyed
     }
 
-    /*struct ShipCell
-    {
-        public Point Position;
-    }*/
-
     class Ship
     {
         public int Id { get; set; }
         public string Name { get; set; } = "UnknownShip";               //добавить список имён и генерировать случайно из него
         public ShipType Type { get; set; }
         public ShipStatus Status { get; set; } = ShipStatus.Full;
+        public Point[] Position;
 
         private int _health;
-
-        //private ShipCell[] _cells;
 
         public ShipStatus Injury()
         {
@@ -45,7 +39,7 @@ namespace SeaBattle
         public Ship(ShipType type)
         {
             Type = type;
-            //_cells = new ShipCell[(int)Type];
+            Position = new Point[(int) Type];
             _health = (int) Type;
         }
     }

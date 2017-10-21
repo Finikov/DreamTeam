@@ -8,5 +8,7 @@ namespace SeaBattle
 {
     class Player
     {
+        public Guid Id;
+        public string Name;
     }
 }

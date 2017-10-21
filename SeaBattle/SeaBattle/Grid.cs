@@ -12,6 +12,12 @@ namespace SeaBattle
         public int X { get; set; }
         public int Y { get; set; }
 
+        public Point()
+        {
+            X = 0;
+            Y = 0;
+        }
+
         public Point(int x, int y)
         {
             X = x;
@@ -34,7 +40,7 @@ namespace SeaBattle
     class Grid
     {
         private int _maxShips = 10;
-        private List<Tuple<Ship, List<Point>>> _ships = new List<Tuple<Ship, List<Point>>>();//Храним список кораблей в виде кортежей (корабль, список, занимаемых им ячеек)
+        private List<Ship> _ships = new List<Ship>();
         private GridCell[,] _grid = new GridCell[10, 10];
 
         public Grid()
@@ -58,24 +64,28 @@ namespace SeaBattle
             if (_checkArea(pos) != 0)
                 throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Invalid ship's position.");
 
-            _ships.Add(Tuple.Create(ship, pos));
-            foreach (Point point in pos)
-                _grid[point.X, point.Y].Ship = ship;
+            _ships.Add(ship);
+
+            for (int i = 0; i < pos.Count; i++)
+            {
+                Point p = pos[i];
+                _grid[p.X, p.Y].Ship = ship;
+                ship.Position[i] = new Point(p.X, p.Y);
+            }
         }
 
-        public void RemoveSHip(Ship ship)
+        public void RemoveShip(Ship ship)
         {
             if (ship == null)
                 throw GameException.MakeExeption(ErrorCode.InvalidShip, "Try to remove the ship that does not exist.");
 
-            int i = 0;
-            while (i < _ships.Count && _ships[i].Item1 != ship)
-                i++;
+            //возможна некорректная работа из-за неправильного сравнения, в будущем требуется заменить на сравнение по Id
+            int i = _ships.FindIndex(a => a == ship);
 
-            if (i >=_ships.Count)
+            if (i < 0 || i >=_ships.Count)
                 throw GameException.MakeExeption(ErrorCode.InvalidShip, "Ship was not found to remove.");
 
-            foreach (Point point in _ships[i].Item2)
+            foreach (Point point in _ships[i].Position)
                 _grid[point.X, point.Y].Ship = null;
                    
             _ships.RemoveAt(i);
@@ -94,8 +104,7 @@ namespace SeaBattle
             {
                 if (ship.Injury() == ShipStatus.Damaged)
                     return ShotResult.Hit;
-                else
-                    return ShotResult.Kill;
+                return ShotResult.Kill;
             }
             return ShotResult.Miss;
         }

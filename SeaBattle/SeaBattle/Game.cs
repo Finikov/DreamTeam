@@ -15,5 +15,8 @@ namespace SeaBattle
 
     class Game
     {
+        private Grid _playField1 = new Grid();
+        private Grid _playField2 = new Grid();
+        
     }
 }

@@ -109,6 +109,33 @@ namespace SeaBattle
             return ShotResult.Miss;
         }
 
+        public void KillShipArea(Ship ship)
+        {
+            if (ship == null)
+                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Ship was not found.");
+
+            var points = ship.Position.OrderBy(a => a.X + a.Y).ToArray();
+            Point first = points.First();
+            Point last = points.Last();
+
+
+            if ((first.X - 1) >= 0)
+                --first.X;
+
+            if ((first.Y - 1) >= 0)
+                --first.Y;
+
+            if ((last.X + 1) <= 10)
+                ++last.X;
+
+            if ((last.Y + 1) <= 10)
+                ++last.Y;
+
+            for (int i = first.X; i <= last.X; i++)
+                 for (int j = first.Y; j <= last.Y; j++)
+                     _grid[i, j].State = GridState.Damaged;
+
+        }
 
         private int _checkArea(List<Point> pos)
         {

@@ -23,6 +23,12 @@ namespace SeaBattle
             X = x;
             Y = y;
         }
+
+        public Point(Point p)
+        {
+            X = p.X;
+            Y = p.Y;
+        }
     }
 
     enum GridState
@@ -61,7 +67,7 @@ namespace SeaBattle
             if ((int) ship.Type != pos.Count)
                 throw GameException.MakeExeption(ErrorCode.InvalidShip, "Invalid ship's settings.");
 
-            if (_checkArea(pos) != 0)
+            if (_checkArea(ref pos) != 0)
                 throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Invalid ship's position.");
 
             _ships.Add(ship);
@@ -114,9 +120,8 @@ namespace SeaBattle
             if (ship == null)
                 throw GameException.MakeExeption(ErrorCode.InvalidShip, "Ship was not found.");
 
-            var points = ship.Position.OrderBy(a => a.X + a.Y).ToArray();
-            Point first = points.First();
-            Point last = points.Last();
+            Point first = new Point(ship.Position.First());
+            Point last = new Point(ship.Position.Last());
 
 
             if ((first.X - 1) >= 0)
@@ -136,15 +141,15 @@ namespace SeaBattle
                      _grid[i, j].State = GridState.Damaged;
 
         }
-
-        private int _checkArea(List<Point> pos)
+        //проверяет область на отсутствие кораблей и сортирует список позиций корабля
+        private int _checkArea(ref List<Point> pos)
         {
             if (pos.Exists(a => a.X < 0 || a.Y < 0 || a.X > 10 || a.Y > 10)) //проверили: не выходит ли наша область за рамки поля
                 return -1;
 
-            var points = pos.OrderBy(a => a.X + a.Y).ToArray();
-            Point first = points.First();
-            Point last = points.Last();
+            pos = pos.OrderBy(a => a.X + a.Y).ToList();
+            Point first = new Point(pos.First());
+            Point last = new Point(pos.Last());
 
             //далее учитываем, что могут быть клетки на границе области
 
@@ -159,7 +164,7 @@ namespace SeaBattle
 
             if ((last.Y + 1) <= 10)
                 ++last.Y;
-            
+
             //проверяем свободность клеток
 
             for (int i = first.X; i <= last.X; i++)

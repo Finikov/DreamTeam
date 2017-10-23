@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,6 +23,12 @@ namespace SeaBattle
         {
             X = x;
             Y = y;
+        }
+
+        public Point(Point p)
+        {
+            X = p.X;
+            Y = p.Y;
         }
     }
 
@@ -55,11 +62,19 @@ namespace SeaBattle
 
         public void AddShip(Ship ship, List<Point> pos)
         {
+            if (ship == null)
+                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Try to creat nonexistent ship.");
+
+            if (pos == null)
+                throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Invalid ship's position.");
+
             if (_ships.Count >= _maxShips)
                 throw GameException.MakeExeption(ErrorCode.RuleError, "Maximum number of ships. Can't add one else.");
 
             if ((int) ship.Type != pos.Count)
                 throw GameException.MakeExeption(ErrorCode.InvalidShip, "Invalid ship's settings.");
+
+            pos = pos.OrderBy(a => a.X + a.Y).ToList();
 
             if (_checkArea(pos) != 0)
                 throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Invalid ship's position.");
@@ -70,7 +85,7 @@ namespace SeaBattle
             {
                 Point p = pos[i];
                 _grid[p.X, p.Y].Ship = ship;
-                ship.Position[i] = new Point(p.X, p.Y);
+                ship.Position[i] = new Point(p);
             }
         }
 
@@ -109,15 +124,40 @@ namespace SeaBattle
             return ShotResult.Miss;
         }
 
+        public void KillShipArea(Ship ship)
+        {
+            if (ship == null)
+                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Ship was not found.");
 
+            Point first = new Point(ship.Position.First());
+            Point last = new Point(ship.Position.Last());
+
+
+            if ((first.X - 1) >= 0)
+                --first.X;
+
+            if ((first.Y - 1) >= 0)
+                --first.Y;
+
+            if ((last.X + 1) <= 10)
+                ++last.X;
+
+            if ((last.Y + 1) <= 10)
+                ++last.Y;
+
+            for (int i = first.X; i <= last.X; i++)
+                 for (int j = first.Y; j <= last.Y; j++)
+                     _grid[i, j].State = GridState.Damaged;
+
+        }
+        //проверяет область на отсутствие кораблей
         private int _checkArea(List<Point> pos)
         {
             if (pos.Exists(a => a.X < 0 || a.Y < 0 || a.X > 10 || a.Y > 10)) //проверили: не выходит ли наша область за рамки поля
                 return -1;
 
-            var points = pos.OrderBy(a => a.X + a.Y).ToArray();
-            Point first = points.First();
-            Point last = points.Last();
+            Point first = new Point(pos.First());
+            Point last = new Point(pos.Last());
 
             //далее учитываем, что могут быть клетки на границе области
 
@@ -132,7 +172,7 @@ namespace SeaBattle
 
             if ((last.Y + 1) <= 10)
                 ++last.Y;
-            
+
             //проверяем свободность клеток
 
             for (int i = first.X; i <= last.X; i++)

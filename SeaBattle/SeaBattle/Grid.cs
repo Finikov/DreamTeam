@@ -169,6 +169,78 @@ namespace SeaBattle
 
         }
 
+        //Проверяет возможно ли поместить корабль
+        private bool _isPossible(Point p, int type, int orientation)
+        {
+           if ( CheckArea(_positionCreat(p, type, orientation)) < 0 )
+                return false;
+
+            return true;
+        }
+
+        //Создает список из точек, занимаемых кораблем длины type 
+        private List<Point> _positionCreat(Point p, int type, int orientation)
+        {
+            List<Point> pos = new List<Point>();
+
+            for (int i = 0; i < type; i++)
+                pos.Add(new Point(p.X + i*orientation, p.Y + i*(1-orientation)));
+
+            return pos;
+        }
+
+        // TODO обдумать правильность логики
+        private List<Point> _occupyArea(List<Point>  list, int index, int type, int orientation)
+        {
+            for (int i = 0; i > type; i--)
+                list.RemoveAt(index + i * 9 * orientation);
+
+            return list;
+        }
+
+        public void AutoFilling()
+        {
+            List<ShipType> ships = new List<ShipType>() { ShipType.FourDecker,
+                                                        ShipType.ThreeDecker, ShipType.ThreeDecker,
+                                                        ShipType.TwoDecker, ShipType.TwoDecker, ShipType.TwoDecker,
+                                                        ShipType.SingleDecker, ShipType.SingleDecker, ShipType.SingleDecker, ShipType.SingleDecker };
+   
+            Random ran = new Random();
+            List<Point> freepoints = new List<Point>();
+
+            for (int i = 0; i < 10; i++)
+                for (int j = 0; j < 10; j++)
+                    freepoints.Add(new Point(i,j));
+
+            foreach (ShipType type in ships )
+            {
+                while (true)
+                {
+                    int orientation = ran.Next(2);
+                    int index = ran.Next(freepoints.Count);
+
+                    if (_isPossible(freepoints[index], (int)type, orientation))
+                    {
+                        AddShip(type, _positionCreat(freepoints[index], (int)type, orientation));
+                        freepoints = _occupyArea(freepoints, index, (int)type, orientation);
+                        break;
+                    }
+
+                    orientation = (orientation == 0) ? 1 : 0;
+
+                    if (_isPossible(freepoints[index], (int)type, orientation))
+                    {
+                        AddShip(type, _positionCreat(freepoints[index], (int)type, orientation));
+                        freepoints = _occupyArea(freepoints, index, (int)type, orientation);
+                        break;
+                    }
+                    
+                }
+                
+            }
+
+        }
+
         //проверяет область на отсутствие кораблей
         private int CheckArea(List<Point> pos)
         {

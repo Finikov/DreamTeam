@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SeaBattle
 {
-    class Point
+    public class Point
     {
         public int X { get; set; }
         public int Y { get; set; }
@@ -44,7 +44,7 @@ namespace SeaBattle
         public GridState State;
     }
 
-    class Grid
+    public class Grid
     {
         private int _maxShips = 10;
         private List<Ship> _ships = new List<Ship>();
@@ -60,42 +60,41 @@ namespace SeaBattle
                 }
         }
 
-        public void AddShip(Ship ship, List<Point> pos)
+        public void AddShip(ShipType shipType, List<Point> pos)
         {
-            if (ship == null)
-                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Try to creat nonexistent ship.");
-
             if (pos == null)
                 throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Invalid ship's position.");
 
-            if (_ships.Count >= _maxShips)
-                throw GameException.MakeExeption(ErrorCode.RuleError, "Maximum number of ships. Can't add one else.");
-
-            if ((int) ship.Type != pos.Count)
+            if ((int) shipType != pos.Count)
                 throw GameException.MakeExeption(ErrorCode.InvalidShip, "Invalid ship's settings.");
 
-            pos = pos.OrderBy(a => a.X + a.Y).ToList();
+            if (_ships.Count >= _maxShips)
+                throw GameException.MakeExeption(ErrorCode.RuleError, "The number of ships is maximum. Can't add one else.");
 
-            if (_checkArea(pos) != 0)
+            if(_ships.FindAll(s => s.Type == shipType).Count + (int) shipType >= 5)
+                throw GameException.MakeExeption(ErrorCode.RuleError, "The number of ships of this type is maximum. Can't add one else.");
+
+            if (pos.Count != 1)
+                pos = pos.OrderBy(a => a.X + a.Y).ToList();
+
+            if (CheckArea(pos) != 0)
                 throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Invalid ship's position.");
 
+            Ship ship = new Ship(shipType, pos);
             _ships.Add(ship);
 
-            for (int i = 0; i < pos.Count; i++)
-            {
-                Point p = pos[i];
+            foreach (Point p in pos)
                 _grid[p.X, p.Y].Ship = ship;
-                ship.Position[i] = new Point(p);
-            }
         }
 
+        // TODO: Обдумать, какой аргумент лучше передавать: Id or Ship
         public void RemoveShip(Ship ship)
         {
-            if (ship == null)
+            //if (shipId < 0 || shipId > 99)
+            if(ship == null)
                 throw GameException.MakeExeption(ErrorCode.InvalidShip, "Try to remove the ship that does not exist.");
 
-            //возможна некорректная работа из-за неправильного сравнения, в будущем требуется заменить на сравнение по Id
-            int i = _ships.FindIndex(a => a == ship);
+            int i = _ships.FindIndex(a => a.Id == ship.Id);
 
             if (i < 0 || i >=_ships.Count)
                 throw GameException.MakeExeption(ErrorCode.InvalidShip, "Ship was not found to remove.");
@@ -108,12 +107,16 @@ namespace SeaBattle
 
         public ShotResult Shot(Point point)
         {
+            if (point.X > 9 || point.X < 0 || point.Y > 9 || point.Y < 0)
+                throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Shot point is off-field");
+
             GridCell cell = _grid[point.X, point.Y];
             if (cell.State == GridState.Damaged)
-                throw GameException.MakeExeption(ErrorCode.RuleError, "This point have already been shooted.");
+                throw GameException.MakeExeption(ErrorCode.RuleError, "This point has already been shooted.");
 
             _grid[point.X, point.Y].State = GridState.Damaged;
 
+            // TODO: добавить обводку убитого корабля с помощью KillShipArea в зависимости от настроек игры
             Ship ship;
             if ((ship = cell.Ship) != null)
             {
@@ -124,59 +127,60 @@ namespace SeaBattle
             return ShotResult.Miss;
         }
 
-        public void KillShipArea(Ship ship)
+
+        /// <summary>
+        /// Возвращает область вокруг заданной позиции(корабля)
+        /// </summary>
+        /// <param name="position">Отсортированный список позиций. 
+        /// Первый элемент - позиция головы корбля, последний элмент - позиция хвоста</param>
+        /// <returns>Возвращает кортеж из двух точек области вокруг корабля: первая - самая левая верхняя точка, 
+        /// вторая - самая правая нижняя точка</returns>
+        private static Tuple<Point, Point> GetShipArea(Point[] position)
+        {
+            Point first = new Point(position.First());
+            Point last = new Point(position.Last());
+
+            if ((first.X - 1) >= 0)
+                --first.X;
+
+            if ((first.Y - 1) >= 0)
+                --first.Y;
+
+            if ((last.X + 1) <= 10)
+                ++last.X;
+
+            if ((last.Y + 1) <= 10)
+                ++last.Y;
+
+            return Tuple.Create(first, last);
+        }
+
+        // TODO: Обдумать, какой аргумент лучше передавать: Id or Ship
+        private void KillShipArea(Ship ship)
         {
             if (ship == null)
                 throw GameException.MakeExeption(ErrorCode.InvalidShip, "Ship was not found.");
 
-            Point first = new Point(ship.Position.First());
-            Point last = new Point(ship.Position.Last());
+            var points = GetShipArea(ship.Position);
 
-
-            if ((first.X - 1) >= 0)
-                --first.X;
-
-            if ((first.Y - 1) >= 0)
-                --first.Y;
-
-            if ((last.X + 1) <= 10)
-                ++last.X;
-
-            if ((last.Y + 1) <= 10)
-                ++last.Y;
-
-            for (int i = first.X; i <= last.X; i++)
-                 for (int j = first.Y; j <= last.Y; j++)
+            for (int i = points.Item1.X; i <= points.Item2.X; i++)
+                 for (int j = points.Item1.Y; j <= points.Item2.Y; j++)
                      _grid[i, j].State = GridState.Damaged;
 
         }
+
         //проверяет область на отсутствие кораблей
-        private int _checkArea(List<Point> pos)
+        private int CheckArea(List<Point> pos)
         {
-            if (pos.Exists(a => a.X < 0 || a.Y < 0 || a.X > 10 || a.Y > 10)) //проверили: не выходит ли наша область за рамки поля
+            //проверили: не выходит ли наша область за рамки поля
+            if (pos.Exists(a => a.X < 0 || a.Y < 0 || a.X > 10 || a.Y > 10))
                 return -1;
 
-            Point first = new Point(pos.First());
-            Point last = new Point(pos.Last());
-
-            //далее учитываем, что могут быть клетки на границе области
-
-            if ((first.X - 1) >= 0)
-                --first.X;
-
-            if ((first.Y - 1) >= 0)
-                --first.Y;
-
-            if ((last.X + 1) <= 10)
-                ++last.X;
-
-            if ((last.Y + 1) <= 10)
-                ++last.Y;
+            var points = GetShipArea(pos.ToArray());
 
             //проверяем свободность клеток
-
-            for (int i = first.X; i <= last.X; i++)
-                for (int j = first.Y; j <= last.Y; j++)
+            for (int i = points.Item1.X; i <= points.Item2.X; i++)
+                for (int j = points.Item1.Y; j <= points.Item2.Y; j++)
                     if (_grid[i, j].Ship != null)
                         return -1;
             return 0;

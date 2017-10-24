@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace SeaBattle
 {
-    enum ErrorCode
+    public enum ErrorCode
     {
         InvalidPosition,
         InvalidShip,
         RuleError,
     }
 
-    class GameException : Exception
+    public class GameException : Exception
     {
         public ErrorCode Code { get; set; }
         public string ErrorText { get; set; }

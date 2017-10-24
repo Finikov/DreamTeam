@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SeaBattle
 {
-    class Player
+    public class Player
     {
         public Guid Id;
         public string Name;

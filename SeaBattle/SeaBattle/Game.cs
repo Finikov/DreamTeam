@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace SeaBattle
 {
-    enum ShotResult
+    public enum ShotResult
     {
         Hit,
         Miss,
         Kill
     }
 
-    class Game
+    public class Game
     {
         private Grid _playField1 = new Grid();
         private Grid _playField2 = new Grid();

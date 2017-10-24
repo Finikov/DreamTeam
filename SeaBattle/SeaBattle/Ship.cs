@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SeaBattle
 {
-    enum ShipType
+    public enum ShipType
     {
         SingleDecker = 1,
         TwoDecker,
@@ -14,17 +14,17 @@ namespace SeaBattle
         FourDecker
     }
 
-    enum ShipStatus
+    public enum ShipStatus
     {
         Full,
         Damaged,
         Destroyed
     }
 
-    class Ship
+    public class Ship
     {
         public int Id { get; set; }
-        public string Name { get; set; } = "UnknownShip";               //добавить список имён и генерировать случайно из него
+        public string Name { get; set; } = "UnknownShip";               // TODO: добавить список имён и генерировать случайно из него
         public ShipType Type { get; set; }
         public ShipStatus Status { get; set; } = ShipStatus.Full;
         public Point[] Position;
@@ -36,10 +36,22 @@ namespace SeaBattle
            return Status = (--_health) <= 0 ? ShipStatus.Destroyed : ShipStatus.Damaged;
         }
 
-        public Ship(ShipType type)
+        /// <summary>
+        /// Инициализирует новый экземпляр класса <c>Ship</c> с указанным типом и расположением на поле
+        /// </summary>
+        /// <param name="type">Тип корабля</param>
+        /// <param name="pos">Отсортированный список позиций. 
+        /// Первый элемент - позиция головы корбля, последний элмент - позиция хвоста</param>
+        public Ship(ShipType type, List<Point> pos)
         {
             Type = type;
+
             Position = new Point[(int) Type];
+            for (int i = 0; i < (int) Type; i++)
+                Position[i] = pos[i];
+
+            Id = Position[0].X * 10 + Position[0].Y;
+
             _health = (int) Type;
         }
     }

@@ -146,10 +146,10 @@ namespace SeaBattle
             if ((first.Y - 1) >= 0)
                 --first.Y;
 
-            if ((last.X + 1) <= 10)
+            if ((last.X + 1) <= 9)
                 ++last.X;
 
-            if ((last.Y + 1) <= 10)
+            if ((last.Y + 1) <= 9)
                 ++last.Y;
 
             return Tuple.Create(first, last);
@@ -172,10 +172,7 @@ namespace SeaBattle
         //Проверяет возможно ли поместить корабль
         private bool _isPossible(Point p, int type, int orientation)
         {
-           if ( CheckArea(_positionCreat(p, type, orientation)) < 0 )
-                return false;
-
-            return true;
+            return CheckArea(_positionCreat(p, type, orientation)) >= 0;
         }
 
         //Создает список из точек, занимаемых кораблем длины type 
@@ -184,16 +181,18 @@ namespace SeaBattle
             List<Point> pos = new List<Point>();
 
             for (int i = 0; i < type; i++)
-                pos.Add(new Point(p.X + i*orientation, p.Y + i*(1-orientation)));
+                pos.Add(new Point(p.X + i * orientation, p.Y + i * (1-orientation)));
 
             return pos;
         }
-
-        // TODO обдумать правильность логики
-        private List<Point> _occupyArea(List<Point>  list, int index, int type, int orientation)
+        //Удаляет точки корабля из числа свободных 
+        private List<Point> _occupyArea(List<Point>  list, List<Point> pos)
         {
-            for (int i = 0; i > type; i--)
-                list.RemoveAt(index + i * 9 * orientation);
+            foreach (Point point in pos)
+            {
+                var index = list.FindIndex(a => a.X == point.X && a.Y == point.Y);
+                list.RemoveAt(index);
+            }
 
             return list;
         }
@@ -210,19 +209,21 @@ namespace SeaBattle
 
             for (int i = 0; i < 10; i++)
                 for (int j = 0; j < 10; j++)
-                    freepoints.Add(new Point(i,j));
+                    freepoints.Add(new Point(j, i));
 
             foreach (ShipType type in ships )
             {
                 while (true)
                 {
-                    int orientation = ran.Next(2);
+                    int orientation = ran.Next(2); //0 - вертикально, 1 - горизонтально
                     int index = ran.Next(freepoints.Count);
+                    List<Point> pos;
 
                     if (_isPossible(freepoints[index], (int)type, orientation))
                     {
-                        AddShip(type, _positionCreat(freepoints[index], (int)type, orientation));
-                        freepoints = _occupyArea(freepoints, index, (int)type, orientation);
+                        pos = _positionCreat(freepoints[index], (int) type, orientation);
+                        AddShip(type, pos);
+                        freepoints = _occupyArea(freepoints, pos);
                         break;
                     }
 
@@ -230,8 +231,9 @@ namespace SeaBattle
 
                     if (_isPossible(freepoints[index], (int)type, orientation))
                     {
-                        AddShip(type, _positionCreat(freepoints[index], (int)type, orientation));
-                        freepoints = _occupyArea(freepoints, index, (int)type, orientation);
+                        pos = _positionCreat(freepoints[index], (int)type, orientation);
+                        AddShip(type, pos);
+                        freepoints = _occupyArea(freepoints, pos);
                         break;
                     }
                     
@@ -245,7 +247,7 @@ namespace SeaBattle
         private int CheckArea(List<Point> pos)
         {
             //проверили: не выходит ли наша область за рамки поля
-            if (pos.Exists(a => a.X < 0 || a.Y < 0 || a.X > 10 || a.Y > 10))
+            if (pos.Exists(a => a.X < 0 || a.Y < 0 || a.X > 9 || a.Y > 9))
                 return -1;
 
             var points = GetShipArea(pos.ToArray());

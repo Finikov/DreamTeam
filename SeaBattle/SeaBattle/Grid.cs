@@ -63,22 +63,22 @@ namespace SeaBattle
         public void AddShip(ShipType shipType, List<Point> pos)
         {
             if (pos == null)
-                throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Invalid ship's position.");
+                throw GameException.MakeExeption(GameErrorCode.InvalidPosition, "Invalid ship's position.");
 
             if ((int) shipType != pos.Count)
-                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Invalid ship's settings.");
+                throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Invalid ship's settings.");
 
             if (_ships.Count >= _maxShips)
-                throw GameException.MakeExeption(ErrorCode.RuleError, "The number of ships is maximum. Can't add one else.");
+                throw GameException.MakeExeption(GameErrorCode.RuleError, "The number of ships is maximum. Can't add one else.");
 
             if(_ships.FindAll(s => s.Type == shipType).Count + (int) shipType >= 5)
-                throw GameException.MakeExeption(ErrorCode.RuleError, "The number of ships of this type is maximum. Can't add one else.");
+                throw GameException.MakeExeption(GameErrorCode.RuleError, "The number of ships of this type is maximum. Can't add one else.");
 
             if (pos.Count != 1)
                 pos = pos.OrderBy(a => a.X + a.Y).ToList();
 
             if (CheckArea(pos) != 0)
-                throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Invalid ship's position.");
+                throw GameException.MakeExeption(GameErrorCode.InvalidPosition, "Invalid ship's position.");
 
             Ship ship = new Ship(shipType, pos);
             _ships.Add(ship);
@@ -92,12 +92,12 @@ namespace SeaBattle
         {
             //if (shipId < 0 || shipId > 99)
             if(ship == null)
-                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Try to remove the ship that does not exist.");
+                throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Try to remove the ship that does not exist.");
 
             int i = _ships.FindIndex(a => a.Id == ship.Id);
 
             if (i < 0 || i >=_ships.Count)
-                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Ship was not found to remove.");
+                throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Ship was not found to remove.");
 
             foreach (Point point in _ships[i].Position)
                 _grid[point.X, point.Y].Ship = null;
@@ -108,11 +108,11 @@ namespace SeaBattle
         public ShotResult Shot(Point point)
         {
             if (point.X > 9 || point.X < 0 || point.Y > 9 || point.Y < 0)
-                throw GameException.MakeExeption(ErrorCode.InvalidPosition, "Shot point is off-field");
+                throw GameException.MakeExeption(GameErrorCode.InvalidPosition, "Shot point is off-field");
 
             GridCell cell = _grid[point.X, point.Y];
             if (cell.State == GridState.Damaged)
-                throw GameException.MakeExeption(ErrorCode.RuleError, "This point has already been shooted.");
+                throw GameException.MakeExeption(GameErrorCode.RuleError, "This point has already been shooted.");
 
             _grid[point.X, point.Y].State = GridState.Damaged;
 
@@ -159,7 +159,7 @@ namespace SeaBattle
         private void KillShipArea(Ship ship)
         {
             if (ship == null)
-                throw GameException.MakeExeption(ErrorCode.InvalidShip, "Ship was not found.");
+                throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Ship was not found.");
 
             var points = GetShipArea(ship.Position);
 

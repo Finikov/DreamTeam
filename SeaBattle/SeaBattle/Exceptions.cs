@@ -1,28 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SeaBattle
 {
-    public enum ErrorCode
+    public enum GameErrorCode
     {
         InvalidPosition,
         InvalidShip,
         RuleError,
+        InvalidSession,
     }
 
     public class GameException : Exception
     {
-        public ErrorCode Code { get; set; }
+        public GameErrorCode ErrorCode { get; set; }
         public string ErrorText { get; set; }
-
-        public static GameException MakeExeption(ErrorCode code, string errText)
+        
+        public static GameException MakeExeption(GameErrorCode code, string errText)
         {
             GameException exc = new GameException
             {
-                Code = code,
+                ErrorCode = code,
                 ErrorText = errText
             };
             return exc;

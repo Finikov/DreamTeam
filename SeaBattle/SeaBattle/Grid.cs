@@ -59,7 +59,18 @@ namespace SeaBattle
                     _grid[i, j].State = GridState.Unbroken;
                 }
         }
-
+/*
+        public void Pringrid()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 10; j++)
+                    Console.Write(_grid[j, i].Ship == null ? "0 " : "1 ");
+                Console.WriteLine("");
+            }
+            Console.WriteLine("");
+        }
+*/
         public void AddShip(ShipType shipType, List<Point> pos)
         {
             if (pos == null)

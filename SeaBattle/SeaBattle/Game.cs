@@ -15,8 +15,8 @@ namespace SeaBattle
 
     public class Game
     {
-        private Grid _playField1 = new Grid();
-        private Grid _playField2 = new Grid();
+        private Grid _player1Field = new Grid();
+        private Grid _player2Field = new Grid();
         
         public Player Player1 = new Player();
         public Player Player2 = new Player();

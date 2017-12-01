@@ -14,10 +14,120 @@ namespace SeaBattle
     {
         private Grid _player1Field = new Grid();
         private Grid _player2Field = new Grid();
-        
+        private Grid _player1EnemyField = new Grid();
+        private Grid _player2EnemyField = new Grid();
+
         public Player Player1 = new Player();
         public Player Player2 = new Player();
 
+        public Tuple<Grid,Grid> GetGridInfo(Guid peerId)
+        {
+            if (peerId == Player1.PeerId)
+                return new Tuple<Grid,Grid>(_player1Field, _player1EnemyField);
+            if (peerId == Player2.PeerId)
+                return new Tuple<Grid, Grid>(_player2Field, _player2EnemyField);
+
+            throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = "+peerId);
+        }
+        //TODO: Подумать, что лучше передавать Ship или position and ShipeType
+        public void AddShip(Ship ship, Guid peerId)
+        {
+            if (peerId != Player1.PeerId && peerId != Player2.PeerId)
+                throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
+
+            Grid field = (peerId == Player1.PeerId) ? _player1Field : _player2Field;
+            field.AddShip(ship);
+        }
+
+        public void AddShip(ShipType shipType, List<Point> pos, Guid peerId)
+        {
+            if (peerId != Player1.PeerId && peerId != Player2.PeerId)
+                throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
+
+            Grid field = (peerId == Player1.PeerId) ? _player1Field : _player2Field;
+            field.AddShip(shipType, pos);
+        }
+
+        public void AutoFilling(Guid peerId)
+        {
+            if (peerId != Player1.PeerId && peerId != Player2.PeerId)
+                throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
+
+            Grid field = (peerId == Player1.PeerId) ? _player1Field : _player2Field;
+            field.AutoFilling();
+        }
+
+        public void PrintGrig(Guid peerId)
+        {
+            if (peerId != Player1.PeerId && peerId != Player2.PeerId)
+                throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
+
+            Console.WriteLine("Field");
+            Grid field = (peerId == Player1.PeerId) ? _player1Field : _player2Field;
+            field.Pringrid();
+
+            Console.WriteLine("Enemy Field");
+            field = (peerId == Player1.PeerId) ? _player1EnemyField : _player2EnemyField;
+            field.Pringrid();
+        }
+
+        public void RemoveShip(Ship ship, Guid peerId)
+        {
+            if (peerId != Player1.PeerId && peerId != Player2.PeerId)
+                throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
+
+            Grid field = (peerId == Player1.PeerId) ? _player1Field : _player2Field;
+            field.RemoveShip(ship.Id);
+        }
+
+        public void ShotPlayer(Point p, Guid peerId)
+        {
+            if (peerId != Player1.PeerId && peerId != Player2.PeerId)
+                throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
+
+            Grid field = (peerId == Player1.PeerId) ? _player1Field : _player2Field;
+            Grid fieldEnemy = (peerId == Player1.PeerId) ? _player1EnemyField : _player2EnemyField;
+
+            switch (field.Shot(p))
+            {
+                case ShotResult.Hit:
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Damaged;
+                    break;
+                case ShotResult.Kill:
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Damaged;
+                    Ship ship = field.FindShip(field.grid[p.X, p.Y].ShipId);
+                    fieldEnemy.AddShip(ship);
+                    fieldEnemy.KillShipArea(ship);
+                    break;
+                case ShotResult.Miss:
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Miss;
+                    break;
+            }
+        }
+
+        public void ShotPlayerLevlUp(Point p, Guid peerId)
+        {
+            if (peerId != Player1.PeerId && peerId != Player2.PeerId)
+                throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
+
+            Grid field = (peerId == Player1.PeerId) ? _player1Field : _player2Field;
+            Grid fieldEnemy = (peerId == Player1.PeerId) ? _player1EnemyField : _player2EnemyField;
+
+            switch (field.ShotLevlUp(p))
+            {
+                case ShotResult.Hit:
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Damaged;
+                    break;
+                case ShotResult.Kill:
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Damaged;
+                    Ship ship = field.FindShip(field.grid[p.X, p.Y].ShipId);
+                    fieldEnemy.AddShip(ship);
+                    break;
+                case ShotResult.Miss:
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Miss;
+                    break;
+            }
+        }
     }
 
     public class GameCtxProvider

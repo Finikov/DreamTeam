@@ -32,15 +32,16 @@ namespace SeaBattle
         }
     }
 
-    enum GridState
+    public enum GridState
     {
         Unbroken,
-        Damaged
+        Damaged,
+        Miss
     }
 
-    struct GridCell
+    public struct GridCell
     {
-        public Ship Ship;
+        public int? ShipId;
         public GridState State;
     }
 
@@ -48,29 +49,77 @@ namespace SeaBattle
     {
         private int _maxShips = 10;
         private List<Ship> _ships = new List<Ship>();
-        private GridCell[,] _grid = new GridCell[10, 10];
+        public GridCell[,] grid = new GridCell[10, 10];
 
         public Grid()
         {
             for (int i = 0; i < 10; i++)
                 for (int j = 0; j < 10; j++)
                 {
-                    _grid[i, j].Ship = null;
-                    _grid[i, j].State = GridState.Unbroken;
+                    grid[i, j].ShipId = null;
+                    grid[i, j].State = GridState.Unbroken;
                 }
         }
-/*
+        
         public void Pringrid()
         {
             for (int i = 0; i < 10; i++)
             {
                 for (int j = 0; j < 10; j++)
-                    Console.Write(_grid[j, i].Ship == null ? "0 " : "1 ");
+                {
+                    if (grid[j, i].State == GridState.Unbroken && grid[j, i].ShipId == null)
+                        Console.Write("0");
+
+                    if (grid[j, i].State == GridState.Miss)
+                        Console.Write("*");
+
+                    if (grid[j, i].State == GridState.Unbroken && grid[j, i].ShipId != null)
+                        Console.Write("1");
+
+                    if (grid[j, i].State == GridState.Damaged)
+                        Console.Write("X");
+                }
                 Console.WriteLine("");
             }
             Console.WriteLine("");
         }
-*/
+
+        public Ship FindShip(int? shipId)
+        {
+            if (shipId < 0 || shipId > 99)
+                throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Try to remove the ship that does not exist.");
+            int i = _ships.FindIndex(a => a.Id == shipId);
+
+            if (i < 0 || i >= _ships.Count)
+                throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Ship was not found to remove.");
+
+            return _ships[i];
+        }
+
+        public void AddShip(Ship ship)
+        {
+            if (ship.Position.Length <= 0)
+                throw GameException.MakeExeption(GameErrorCode.InvalidPosition, "Invalid ship's position.");
+
+            if (_ships.Count >= _maxShips)
+                throw GameException.MakeExeption(GameErrorCode.RuleError, "The number of ships is maximum. Can't add one else.");
+
+            if (_ships.FindAll(s => s.Type == ship.Type).Count + (int)ship.Type >= 5)
+                throw GameException.MakeExeption(GameErrorCode.RuleError, "The number of ships of this type is maximum. Can't add one else.");
+
+            var pos = ship.Position;
+            if (pos.Length != 1)
+                pos = pos.OrderBy(a => a.X + a.Y).ToArray();
+
+            if (CheckArea(pos.ToList()) != 0)
+                throw GameException.MakeExeption(GameErrorCode.InvalidPosition, "Invalid ship's position.");
+
+            _ships.Add(ship);
+
+            foreach (Point p in pos)
+                grid[p.X, p.Y].ShipId = ship.Id;
+        }
+
         public void AddShip(ShipType shipType, List<Point> pos)
         {
             if (pos == null)
@@ -81,56 +130,36 @@ namespace SeaBattle
 
             if (_ships.Count >= _maxShips)
                 throw GameException.MakeExeption(GameErrorCode.RuleError, "The number of ships is maximum. Can't add one else.");
-
-            if(_ships.FindAll(s => s.Type == shipType).Count + (int) shipType >= 5)
-                throw GameException.MakeExeption(GameErrorCode.RuleError, "The number of ships of this type is maximum. Can't add one else.");
-
-            if (pos.Count != 1)
-                pos = pos.OrderBy(a => a.X + a.Y).ToList();
-
-            if (CheckArea(pos) != 0)
-                throw GameException.MakeExeption(GameErrorCode.InvalidPosition, "Invalid ship's position.");
-
-            Ship ship = new Ship(shipType, pos);
-            _ships.Add(ship);
-
-            foreach (Point p in pos)
-                _grid[p.X, p.Y].Ship = ship;
+            
+            AddShip(new Ship(shipType, pos));
         }
 
         // TODO: Обдумать, какой аргумент лучше передавать: Id or Ship
-        public void RemoveShip(Ship ship)
+        public void RemoveShip(int shipId)
         {
-            //if (shipId < 0 || shipId > 99)
-            if(ship == null)
-                throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Try to remove the ship that does not exist.");
+            Ship ship = FindShip(shipId);
 
-            int i = _ships.FindIndex(a => a.Id == ship.Id);
-
-            if (i < 0 || i >=_ships.Count)
-                throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Ship was not found to remove.");
-
-            foreach (Point point in _ships[i].Position)
-                _grid[point.X, point.Y].Ship = null;
+            foreach (Point point in ship.Position)
+                grid[point.X, point.Y].ShipId = null;
                    
-            _ships.RemoveAt(i);
+            _ships.Remove(ship);
         }
 
-        public ShotResult Shot(Point point)
+        public ShotResult ShotLevlUp(Point point)
         {
             if (point.X > 9 || point.X < 0 || point.Y > 9 || point.Y < 0)
                 throw GameException.MakeExeption(GameErrorCode.InvalidPosition, "Shot point is off-field");
 
-            GridCell cell = _grid[point.X, point.Y];
-            if (cell.State == GridState.Damaged)
+            GridCell cell = grid[point.X, point.Y];
+            if (cell.State == GridState.Damaged || cell.State == GridState.Miss)
                 throw GameException.MakeExeption(GameErrorCode.RuleError, "This point has already been shooted.");
 
-            _grid[point.X, point.Y].State = GridState.Damaged;
+            
+            cell.State = (cell.ShipId == null) ? GridState.Miss : GridState.Damaged;
 
-            // TODO: добавить обводку убитого корабля с помощью KillShipArea в зависимости от настроек игры
-            Ship ship;
-            if ((ship = cell.Ship) != null)
+            if (cell.ShipId != null)
             {
+                var ship = _ships.Find(s => s.Id == cell.ShipId);
                 if (ship.Injury() == ShipStatus.Damaged)
                     return ShotResult.Hit;
                 return ShotResult.Kill;
@@ -138,7 +167,32 @@ namespace SeaBattle
             return ShotResult.Miss;
         }
 
+        //Добавлена обводка убитого корабля
+        public ShotResult Shot(Point point)
+        {
+            if (point.X > 9 || point.X < 0 || point.Y > 9 || point.Y < 0)
+                throw GameException.MakeExeption(GameErrorCode.InvalidPosition, "Shot point is off-field");
 
+            GridCell cell = grid[point.X, point.Y];
+            if (cell.State == GridState.Damaged || cell.State == GridState.Miss)
+                throw GameException.MakeExeption(GameErrorCode.RuleError, "This point has already been shooted.");
+
+
+            cell.State = (cell.ShipId == null) ? GridState.Miss : GridState.Damaged;
+
+            if (cell.ShipId != null)
+            {
+                var ship = _ships.Find(s => s.Id == cell.ShipId);
+                if (ship.Injury() == ShipStatus.Destroyed)
+                {
+                    KillShipArea(ship);
+                    return ShotResult.Kill;
+                }
+                return ShotResult.Hit;
+                
+            }
+            return ShotResult.Miss;
+        }
         /// <summary>
         /// Возвращает область вокруг заданной позиции(корабля)
         /// </summary>
@@ -167,16 +221,16 @@ namespace SeaBattle
         }
 
         // TODO: Обдумать, какой аргумент лучше передавать: Id or Ship
-        private void KillShipArea(Ship ship)
+        public void KillShipArea(Ship ship)
         {
             if (ship == null)
                 throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Ship was not found.");
 
             var points = GetShipArea(ship.Position);
 
-            for (int i = points.Item1.X; i <= points.Item2.X; i++)
+            for (int k= points.Item1.X; k <= points.Item2.X; k++)
                  for (int j = points.Item1.Y; j <= points.Item2.Y; j++)
-                     _grid[i, j].State = GridState.Damaged;
+                     grid[k, j].State = GridState.Miss;
 
         }
 
@@ -266,7 +320,7 @@ namespace SeaBattle
             //проверяем свободность клеток
             for (int i = points.Item1.X; i <= points.Item2.X; i++)
                 for (int j = points.Item1.Y; j <= points.Item2.Y; j++)
-                    if (_grid[i, j].Ship != null)
+                    if (grid[i, j].ShipId != null)
                         return -1;
             return 0;
         }

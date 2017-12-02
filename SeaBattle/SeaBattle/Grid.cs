@@ -37,6 +37,7 @@ namespace SeaBattle
         Unbroken,
         Damaged,
         Miss
+       // Destroyed
     }
 
     public struct GridCell
@@ -68,15 +69,32 @@ namespace SeaBattle
                 for (int j = 0; j < 10; j++)
                 {
                     if (grid[j, i].State == GridState.Unbroken && grid[j, i].ShipId == null)
+                    {
                         Console.Write("0");
+                        continue;
+                    }
 
                     if (grid[j, i].State == GridState.Miss)
+                    {
                         Console.Write("*");
+                        continue;
+                    }
 
                     if (grid[j, i].State == GridState.Unbroken && grid[j, i].ShipId != null)
+                    {
                         Console.Write("1");
+                        continue;
+                    }
 
-                    if (grid[j, i].State == GridState.Damaged)
+                    if (grid[j, i].State == GridState.Damaged && grid[j, i].ShipId == null)
+                    {
+                        Console.Write("X");
+                        continue;
+                    }
+
+                    if (FindShip(grid[j,i].ShipId).Status == ShipStatus.Destroyed)
+                        Console.Write("=");
+                    else
                         Console.Write("X");
                 }
                 Console.WriteLine("");
@@ -135,8 +153,11 @@ namespace SeaBattle
         }
 
         // TODO: Обдумать, какой аргумент лучше передавать: Id or Ship
-        public void RemoveShip(int shipId)
+        public void RemoveShip(int? shipId)
         {
+            if(shipId == null)
+                throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Try to delete nonexistent ship");
+
             Ship ship = FindShip(shipId);
 
             foreach (Point point in ship.Position)
@@ -154,8 +175,8 @@ namespace SeaBattle
             if (cell.State == GridState.Damaged || cell.State == GridState.Miss)
                 throw GameException.MakeExeption(GameErrorCode.RuleError, "This point has already been shooted.");
 
-            
-            cell.State = (cell.ShipId == null) ? GridState.Miss : GridState.Damaged;
+
+            grid[point.X, point.Y].State = (cell.ShipId == null) ? GridState.Miss : GridState.Damaged;
 
             if (cell.ShipId != null)
             {
@@ -178,7 +199,7 @@ namespace SeaBattle
                 throw GameException.MakeExeption(GameErrorCode.RuleError, "This point has already been shooted.");
 
 
-            cell.State = (cell.ShipId == null) ? GridState.Miss : GridState.Damaged;
+            grid[point.X, point.Y].State = (cell.ShipId == null) ? GridState.Miss : GridState.Damaged;
 
             if (cell.ShipId != null)
             {
@@ -230,7 +251,7 @@ namespace SeaBattle
 
             for (int k= points.Item1.X; k <= points.Item2.X; k++)
                  for (int j = points.Item1.Y; j <= points.Item2.Y; j++)
-                     grid[k, j].State = GridState.Miss;
+                     grid[k, j].State = (grid[k,j].ShipId == null) ? GridState.Miss : GridState.Damaged;
 
         }
 

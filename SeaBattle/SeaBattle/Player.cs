@@ -4,7 +4,7 @@ namespace SeaBattle
 {
     public class Player
     {
-        public Guid Id;
+        public Guid PeerId;
         public string Name;
     }
 }

@@ -7,6 +7,9 @@
         Password,
         SubOperationCode,
         PeerId,
-        Profile
+        Profile,
+        SessionId,
+        SessionStatus,
+        ShotPosition
     }
 }

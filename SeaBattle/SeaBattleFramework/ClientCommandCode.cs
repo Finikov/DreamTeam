@@ -9,6 +9,9 @@ namespace SeaBattleFramework
     {
         Login,
         Register,
-        GetUserProfile
+        GetUserProfile,
+        Logout,
+        FindMatch,
+        CheckSesssionStatus
     }
 }

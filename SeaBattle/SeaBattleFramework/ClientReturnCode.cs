@@ -2,6 +2,12 @@
 {
     public enum ClientReturnCode
     {
-        UserCreated
+        NoCode,
+        UserCreated,
+        UserLogged,
+        ProfileSended,
+        FindingOpponent,
+        GameWasFound,
+        CheckingSessionStatus
     }
 }

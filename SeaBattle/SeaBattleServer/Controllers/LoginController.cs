@@ -35,7 +35,7 @@ namespace SeaBattleServer.Controllers
                             transaction.Commit();
                             return new Message
                             {
-                                ReturnCode = (short) ErrorCode.IncorretcUsernameOrPassword,
+                                ErrorCode = (short) ClientErrorCode.IncorretcUsernameOrPassword,
                                 DebugMessage = "Username or password is incorrect"
                             };
                         }
@@ -47,21 +47,21 @@ namespace SeaBattleServer.Controllers
                         transaction.Commit();
                         if (String.Equals(hash.Trim(), user.Password.Trim(), StringComparison.OrdinalIgnoreCase))
                         {
-                            if (Server.ContainsUser(user.Id))
+                            if (Server.Users.ContainsValue(user.Id))
                                 return new Message
                                 {
-                                    ReturnCode = (short) ErrorCode.UserCurrentlyLoggedIn,
+                                    ErrorCode = (short) ClientErrorCode.UserCurrentlyLoggedIn,
                                     DebugMessage = "User is currently logged in"
                                 };
 
                             var peerId = Server.AddUser(user.Id);
                             var para = new Dictionary<byte, object> {{(byte) ClientParameterCode.PeerId, peerId}};
 
-                            return new Message {ReturnCode = (short) ErrorCode.Ok, Parameters = para};
+                            return new Message {ReturnCode = (short) ClientReturnCode.UserLogged, Parameters = para};
                         }
                         return new Message
                         {
-                            ReturnCode = (short) ErrorCode.IncorretcUsernameOrPassword,
+                            ErrorCode = (short) ClientErrorCode.IncorretcUsernameOrPassword,
                             DebugMessage = "Username or password is incorrect"
                         };
                     }
@@ -72,7 +72,7 @@ namespace SeaBattleServer.Controllers
                 // TODO: добавить LogDebug 
                 return new Message
                 {
-                    ReturnCode = (short) ErrorCode.OperationInvalid,
+                    ErrorCode = (short) ClientErrorCode.OperationInvalid,
                     DebugMessage = e.Message
                 };
             }

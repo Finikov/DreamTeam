@@ -14,6 +14,7 @@ namespace SeaBattleFramework
         FindMatch,
         CheckSesssionStatus,
         Shot,
-        CheckTurn
+        CheckTurn,
+        FillGrid
     }
 }

@@ -9,6 +9,7 @@
         UsernameInUse,
         IncorretcUsernameOrPassword,
         UserCurrentlyLoggedIn,
-        InvalidPeerId
+        InvalidPeerId,
+        InvalidSessionId
     }
 }

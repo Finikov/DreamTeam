@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using SeaBattleFramework;
 
 namespace SeaBattle

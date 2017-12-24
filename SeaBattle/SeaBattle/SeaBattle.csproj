@@ -63,7 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SeaBattleFramework\SeaBattleFramework.csproj">
-      <Project>{E23B9A54-9C19-4ABD-94A0-E04BAF7BE309}</Project>
+      <Project>{e23b9a54-9c19-4abd-94a0-e04baf7be309}</Project>
       <Name>SeaBattleFramework</Name>
     </ProjectReference>
   </ItemGroup>

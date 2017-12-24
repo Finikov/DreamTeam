@@ -137,7 +137,7 @@ namespace SeaBattleServer.Controllers
                     Parameters = new Dictionary<byte, object>
                     {
                         {(byte) ClientParameterCode.EnemyGrid, JsonConvert.SerializeObject(field)},
-                        {(byte) ClientParameterCode.Finish, session.Game.Winner}
+                        {(byte) ClientParameterCode.Winner, session.Game.Winner}
                     }
                 };
                 session.FinishSession();
@@ -188,7 +188,7 @@ namespace SeaBattleServer.Controllers
                     Parameters = new Dictionary<byte, object>
                         {
                             {(byte) ClientParameterCode.Grid, JsonConvert.SerializeObject(session.Game.GetGridInfo(peerId).Item1.GridCells)},
-                            {(byte) ClientParameterCode.Finish, session.Game.Winner}
+                            {(byte) ClientParameterCode.Winner, session.Game.Winner}
                         }
                 };
                 session.FinishSession();
@@ -227,7 +227,7 @@ namespace SeaBattleServer.Controllers
                         Parameters = new Dictionary<byte, object>
                         {
                             {(byte) ClientParameterCode.Grid, JsonConvert.SerializeObject(session.Game.GetGridInfo(peerId).Item1.GridCells)},
-                            {(byte) ClientParameterCode.Finish, session.Game.Winner}
+                            {(byte) ClientParameterCode.Winner, session.Game.Winner}
                         }
                     };
                     session.CloseSession();

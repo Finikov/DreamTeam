@@ -13,7 +13,7 @@
         ShotPosition,
         Grid,
         EnemyGrid,
-        Finish,
+        Winner,
         ListShips
     }
 }

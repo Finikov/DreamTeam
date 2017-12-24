@@ -86,7 +86,7 @@ namespace SeaBattleServer.Controllers
                         {(byte) ClientParameterCode.Finish, session.Game.Winner}
                     }
                 };
-                session.FinishSession(peerId);
+                session.FinishSession();
                 return mes;
             }
             catch (Exception e)
@@ -137,7 +137,7 @@ namespace SeaBattleServer.Controllers
                             {(byte) ClientParameterCode.Finish, session.Game.Winner}
                         }
                 };
-                session.FinishSession(peerId);
+                session.FinishSession();
                 return mes;
             }
             catch (Exception e)
@@ -162,9 +162,8 @@ namespace SeaBattleServer.Controllers
                 var sessionId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.SessionId].ToString());
                 var session = Server.Sessions.Find(s => s.Id == sessionId);
 
-                session.FinishSession(peerId);
+                session.CloseSession(peerId);
                 
-
                 return new Message()
                 {
                     ReturnCode = (short) ClientReturnCode.NoCode

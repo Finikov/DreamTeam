@@ -88,7 +88,7 @@ namespace SeaBattleServer.Controllers
 
                 var para = new Dictionary<byte, object>
                 {
-                    {(byte) ClientParameterCode.Grid, sessions[0].Game.GetGridInfo(peerId).Item1.GridCells}
+                    {(byte) ClientParameterCode.Grid, JsonConvert.SerializeObject(sessions[0].Game.GetGridInfo(peerId).Item1.GridCells)}
                 };
 
                 return new Message
@@ -120,13 +120,13 @@ namespace SeaBattleServer.Controllers
                 var session = Server.Sessions.Find(s => s.Id == sessionId);
 
                 var field = session.Game.ShotPlayer(point, peerId);
-                if (session.Game.Winner == null)
+                if (session.Game.Winner == Guid.Empty)
                     return new Message
                     {
                         ReturnCode = (short)ClientReturnCode.ShotResult,
                         Parameters = new Dictionary<byte, object>
                         {
-                            {(byte) ClientParameterCode.EnemyGrid, field}
+                            {(byte) ClientParameterCode.EnemyGrid, JsonConvert.SerializeObject(field)}
                         }
                     };
 
@@ -136,7 +136,7 @@ namespace SeaBattleServer.Controllers
                     ReturnCode = (short)ClientReturnCode.Finish,
                     Parameters = new Dictionary<byte, object>
                     {
-                        {(byte) ClientParameterCode.EnemyGrid, field},
+                        {(byte) ClientParameterCode.EnemyGrid, JsonConvert.SerializeObject(field)},
                         {(byte) ClientParameterCode.Finish, session.Game.Winner}
                     }
                 };
@@ -165,15 +165,15 @@ namespace SeaBattleServer.Controllers
                 var sessionId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.SessionId].ToString());
                 var session = Server.Sessions.Find(s => s.Id == sessionId);
 
-                if (session.Game.Winner == null)
+                if (session.Game.Winner == Guid.Empty)
                 {
-                    if (session.Game.CurrentTurn.PeerId == peerId)
+                    if (session.Game.CurrentTurn == peerId)
                         return new Message
                         {
                             ReturnCode = (short)ClientReturnCode.GetGrid,
                             Parameters = new Dictionary<byte, object>
                             {
-                                {(byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells}
+                                {(byte) ClientParameterCode.Grid, JsonConvert.SerializeObject(session.Game.GetGridInfo(peerId).Item1.GridCells)}
                             }
                         };
                     return new Message
@@ -187,7 +187,7 @@ namespace SeaBattleServer.Controllers
                     ReturnCode = (short)ClientReturnCode.Finish,
                     Parameters = new Dictionary<byte, object>
                         {
-                            {(byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells},
+                            {(byte) ClientParameterCode.Grid, JsonConvert.SerializeObject(session.Game.GetGridInfo(peerId).Item1.GridCells)},
                             {(byte) ClientParameterCode.Finish, session.Game.Winner}
                         }
                 };
@@ -219,14 +219,14 @@ namespace SeaBattleServer.Controllers
                 if (session.Status == GameStatus.Started)
                 {
                     session.Game.Winner = (peerId == session.Game.Player1.PeerId)
-                        ? session.Game.Player2
-                        : session.Game.Player1;
+                        ? session.Game.Player2.PeerId
+                        : session.Game.Player1.PeerId;
                     var mes = new Message()
                     {
                         ReturnCode = (short)ClientReturnCode.Finish,
                         Parameters = new Dictionary<byte, object>
                         {
-                            {(byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells},
+                            {(byte) ClientParameterCode.Grid, JsonConvert.SerializeObject(session.Game.GetGridInfo(peerId).Item1.GridCells)},
                             {(byte) ClientParameterCode.Finish, session.Game.Winner}
                         }
                     };

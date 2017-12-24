@@ -48,9 +48,9 @@ namespace SeaBattleServer.SubServerCommon
             {
                 Random ran = new Random();
                 if (ran.Next(2) == 0)
-                    Game.CurrentTurn = Game.Player1;
+                    Game.CurrentTurn = Game.Player1.PeerId;
                 else
-                    Game.CurrentTurn = Game.Player2;
+                    Game.CurrentTurn = Game.Player2.PeerId;
                 Status = GameStatus.Started;
             }
         }

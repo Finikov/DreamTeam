@@ -30,8 +30,8 @@ namespace SeaBattleServer.Controllers
                         if (session.Status == GameStatus.Started)
                         {
                             session.Game.Winner = (peerId == session.Game.Player1.PeerId)
-                                ? session.Game.Player2
-                                : session.Game.Player1;
+                                ? session.Game.Player2.PeerId
+                                : session.Game.Player1.PeerId;
                         }
                         session.CloseSession();
                     }

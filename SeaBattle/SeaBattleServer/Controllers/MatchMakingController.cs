@@ -64,7 +64,7 @@ namespace SeaBattleServer.Controllers
                 {
                     Session session = Server.Sessions.Where(s => s.Id == sessionId).ToList()[0];
                     session.Game.AutoFilling(peerId);
-                    requestMsg.Parameters.Add((byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells);
+                    requestMsg.Parameters.Add((byte) ClientParameterCode.Grid, JsonConvert.SerializeObject(session.Game.GetGridInfo(peerId).Item1.GridCells));
                 }
 
                 return requestMsg;

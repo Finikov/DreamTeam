@@ -20,8 +20,8 @@ namespace SeaBattle
 
         public Player Player1 = null;//new Player();
         public Player Player2 = null;//new Player();
-        public Player CurrentTurn = null;
-        public Player Winner = null;
+        public Guid CurrentTurn;
+        public Guid Winner;
 
         public bool Complexity = false;
 
@@ -109,7 +109,7 @@ namespace SeaBattle
                     break;
                 case ShotResult.Miss:
                     fieldEnemy.GridCells[p.X, p.Y].State = GridState.Miss;
-                    CurrentTurn = (peerId == Player1.PeerId) ? Player2 : Player1;
+                    CurrentTurn = (peerId == Player1.PeerId) ? Player2.PeerId : Player1.PeerId;
                     break;
             }
             return fieldEnemy.GridCells;

@@ -10,7 +10,8 @@
         GameWasFound,
         CheckingSessionStatus,
         ShotResult,
-        Gridfield,
-        WaitforYourTurn
+        GetGrid,
+        WaitforYourTurn,
+        Finish
     }
 }

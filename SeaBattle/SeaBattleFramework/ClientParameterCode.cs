@@ -12,6 +12,7 @@
         SessionStatus,
         ShotPosition,
         Grid,
-        EnemyGrid
+        EnemyGrid,
+        Finish
     }
 }

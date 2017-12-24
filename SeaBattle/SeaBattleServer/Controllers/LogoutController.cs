@@ -28,7 +28,9 @@ namespace SeaBattleServer.Controllers
                     foreach (var session in sessions)
                         session.RemovePlayer(peerId);
 
+
                 Server.Users.Remove(peerId);
+                
                 return new Message {ReturnCode = (short) ClientReturnCode.NoCode};
             }
             catch (Exception e)

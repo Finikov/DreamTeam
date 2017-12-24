@@ -57,10 +57,15 @@
     <Compile Include="Grid.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Ship.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SeaBattleFramework\SeaBattleFramework.csproj">
+      <Project>{E23B9A54-9C19-4ABD-94A0-E04BAF7BE309}</Project>
+      <Name>SeaBattleFramework</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

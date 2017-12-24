@@ -12,11 +12,13 @@ namespace SeaBattleServer.SubServerCommon
         public Guid Id { get; set; }
         public GameStatus Status { get; set; }
         public Game Game { get; set; }
+        public short CheckSendFinish { get; set; }
 
         public Session(Guid id)
         {
             Id = id;
             Status = GameStatus.Empty;
+            CheckSendFinish = 1;
             Game = new Game();
         }
 
@@ -65,6 +67,31 @@ namespace SeaBattleServer.SubServerCommon
                 Status = GameStatus.Finished;
                 Game.Player2 = null;
             }
+        }
+
+        public void FinishSession()
+        {
+            if (CheckSendFinish == 0)
+            {
+                Game.Player1 = null;
+                Game.Player2 = null;
+                Status = GameStatus.Finished;
+                Server.CloseSession(Id);
+            }
+            else
+                CheckSendFinish -= 1;
+        }
+
+        public void CloseSession()
+        {
+            if (Status == GameStatus.Started)
+                FinishSession();
+            if (Status == GameStatus.FindingOpponent)
+            {
+                Status = GameStatus.Finished;
+                Server.CloseSession(Id);
+            }
+                
         }
     }
 }

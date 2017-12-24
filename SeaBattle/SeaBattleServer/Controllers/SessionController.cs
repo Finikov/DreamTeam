@@ -33,7 +33,7 @@ namespace SeaBattleServer.Controllers
 
                 return new Message
                 {
-                    ReturnCode = (short) ClientReturnCode.CheckingSessionStatus,
+                    ReturnCode = (short)ClientReturnCode.CheckingSessionStatus,
                     Parameters = new Dictionary<byte, object>
                     {
                         {(byte) ClientParameterCode.SessionStatus, (short) sessions[0].Status}
@@ -115,21 +115,33 @@ namespace SeaBattleServer.Controllers
             {
                 Message msg = JsonConvert.DeserializeObject<Message>(data);
                 var peerId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.PeerId].ToString());
-                var point = JsonConvert.DeserializeObject<Point>(msg.Parameters[(byte) ClientParameterCode.ShotPosition].ToString());
+                var point = JsonConvert.DeserializeObject<Point>(msg.Parameters[(byte)ClientParameterCode.ShotPosition].ToString());
                 var sessionId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.SessionId].ToString());
                 var session = Server.Sessions.Find(s => s.Id == sessionId);
 
                 var field = session.Game.ShotPlayer(point, peerId);
+                if (session.Game.Winner == null)
+                    return new Message
+                    {
+                        ReturnCode = (short)ClientReturnCode.ShotResult,
+                        Parameters = new Dictionary<byte, object>
+                        {
+                            {(byte) ClientParameterCode.EnemyGrid, field}
+                        }
+                    };
 
-                return new Message
+
+                var mes = new Message()
                 {
-                    ReturnCode = (short)ClientReturnCode.ShotResult,
+                    ReturnCode = (short)ClientReturnCode.Finish,
                     Parameters = new Dictionary<byte, object>
                     {
-                        {(byte) ClientParameterCode.EnemyGrid, field}
+                        {(byte) ClientParameterCode.EnemyGrid, field},
+                        {(byte) ClientParameterCode.Finish, session.Game.Winner}
                     }
                 };
-
+                session.FinishSession();
+                return mes;
             }
             catch (Exception e)
             {
@@ -139,7 +151,7 @@ namespace SeaBattleServer.Controllers
                     DebugMessage = e.Message
                 };
             }
-            
+
         }
 
         [Route("CheckTurn")]
@@ -149,33 +161,94 @@ namespace SeaBattleServer.Controllers
             try
             {
                 Message msg = JsonConvert.DeserializeObject<Message>(data);
-                var peerId = Guid.Parse(msg.Parameters[(byte) ClientParameterCode.PeerId].ToString());
-                var sessionId = Guid.Parse(msg.Parameters[(byte) ClientParameterCode.SessionId].ToString());
+                var peerId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.PeerId].ToString());
+                var sessionId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.SessionId].ToString());
                 var session = Server.Sessions.Find(s => s.Id == sessionId);
 
-                if (session.Game.CurrentTurn.PeerId == peerId)
+                if (session.Game.Winner == null)
+                {
+                    if (session.Game.CurrentTurn.PeerId == peerId)
+                        return new Message
+                        {
+                            ReturnCode = (short)ClientReturnCode.GetGrid,
+                            Parameters = new Dictionary<byte, object>
+                            {
+                                {(byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells}
+                            }
+                        };
                     return new Message
                     {
-                        ReturnCode = (short) ClientReturnCode.GetGrid,
-                        Parameters = new Dictionary<byte, object>
-                        {
-                            {(byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells}
-                        }
+                        ReturnCode = (short)ClientReturnCode.WaitforYourTurn
                     };
+                }
 
+                var mes = new Message()
+                {
+                    ReturnCode = (short)ClientReturnCode.Finish,
+                    Parameters = new Dictionary<byte, object>
+                        {
+                            {(byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells},
+                            {(byte) ClientParameterCode.Finish, session.Game.Winner}
+                        }
+                };
+                session.FinishSession();
+                return mes;
+            }
+            catch (Exception e)
+            {
                 return new Message
                 {
-                    ReturnCode = (short) ClientReturnCode.WaitforYourTurn
+                    ErrorCode = (short)ClientErrorCode.OperationInvalid,
+                    DebugMessage = e.Message
+                };
+            }
+
+        }
+
+        [Route("CloseSession")]
+        [HttpGet]
+        public Message CloseSession(string data)
+        {
+            try
+            {
+                Message msg = JsonConvert.DeserializeObject<Message>(data);
+                var peerId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.PeerId].ToString());
+                var sessionId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.SessionId].ToString());
+                var session = Server.Sessions.Find(s => s.Id == sessionId);
+
+                if (session.Status == GameStatus.Started)
+                {
+                    session.Game.Winner = (peerId == session.Game.Player1.PeerId)
+                        ? session.Game.Player2
+                        : session.Game.Player1;
+                    var mes = new Message()
+                    {
+                        ReturnCode = (short)ClientReturnCode.Finish,
+                        Parameters = new Dictionary<byte, object>
+                        {
+                            {(byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells},
+                            {(byte) ClientParameterCode.Finish, session.Game.Winner}
+                        }
+                    };
+                    session.CloseSession();
+                    return mes;
+
+                }
+                session.CloseSession();
+                
+                return new Message()
+                {
+                    ReturnCode = (short) ClientReturnCode.NoCode
                 };
             }
             catch (Exception e)
             {
                 return new Message
                 {
-                    ErrorCode = (short) ClientErrorCode.OperationInvalid,
+                    ErrorCode = (short)ClientErrorCode.OperationInvalid,
                     DebugMessage = e.Message
                 };
-           }
+            }
 
         }
     }

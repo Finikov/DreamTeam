@@ -21,6 +21,7 @@ namespace SeaBattle
         public Player Player1 = null;//new Player();
         public Player Player2 = null;//new Player();
         public Player CurrentTurn = null;
+        public Player Winner = null;
 
         public bool Complexity = false;
 
@@ -103,6 +104,8 @@ namespace SeaBattle
                     Ship ship = field.FindShip(field.GridCells[p.X, p.Y].ShipId);
                     fieldEnemy.AddShip(ship);
                     fieldEnemy.KillShip(ship, Complexity);
+                    if (fieldEnemy.Ships.Count == 10)
+                        Winner = CurrentTurn;
                     break;
                 case ShotResult.Miss:
                     fieldEnemy.GridCells[p.X, p.Y].State = GridState.Miss;

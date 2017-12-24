@@ -176,11 +176,11 @@ namespace SeaBattleServer.Controllers
                             {(byte) ClientParameterCode.Finish, session.Game.Winner}
                         }
                     };
-                    session.CloseSession(peerId);
+                    session.CloseSession();
                     return mes;
 
                 }
-                session.CloseSession(peerId);
+                session.CloseSession();
                 
                 return new Message()
                 {

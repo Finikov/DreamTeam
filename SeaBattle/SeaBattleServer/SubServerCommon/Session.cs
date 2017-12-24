@@ -82,7 +82,7 @@ namespace SeaBattleServer.SubServerCommon
                 CheckSendFinish -= 1;
         }
 
-        public void CloseSession(Guid peerId)
+        public void CloseSession()
         {
             if (Status == GameStatus.Started)
                 FinishSession();

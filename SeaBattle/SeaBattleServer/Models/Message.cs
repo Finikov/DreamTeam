@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Web;
+﻿using System.Collections.Generic;
+using SeaBattleFramework;
 
 namespace SeaBattleServer.Models
 {
@@ -10,6 +7,7 @@ namespace SeaBattleServer.Models
     {
         public Dictionary<byte, object> Parameters { get; set; }
         public string DebugMessage { get; set; }
-        public short ReturnCode { get; set; }
+        public short ReturnCode { get; set; } = (short) ClientReturnCode.NoCode;
+        public short ErrorCode { get; set; } = (short) ClientErrorCode.Ok;
     }
 }

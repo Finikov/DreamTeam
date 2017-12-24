@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace SeaBattle
+namespace SeaBattleFramework
 {
     public enum ShipType
     {
@@ -23,13 +26,13 @@ namespace SeaBattle
         public string Name { get; set; } = "UnknownShip";               // TODO: добавить список имён и генерировать случайно из него
         public ShipType Type { get; set; }
         public ShipStatus Status { get; set; } = ShipStatus.Full;
-        public Point[] Position;
+        public Point[] Position { get; set; }
 
-        private int _health;
+        public int Health { get; set; }
 
         public ShipStatus Injury()
         {
-           return Status = (--_health) <= 0 ? ShipStatus.Destroyed : ShipStatus.Damaged;
+            return Status = (--Health) <= 0 ? ShipStatus.Destroyed : ShipStatus.Damaged;
         }
 
         /// <summary>
@@ -42,13 +45,13 @@ namespace SeaBattle
         {
             Type = type;
 
-            Position = new Point[(int) Type];
-            for (int i = 0; i < (int) Type; i++)
+            Position = new Point[(int)Type];
+            for (int i = 0; i < (int)Type; i++)
                 Position[i] = pos[i];
 
             Id = Position[0].X * 10 + Position[0].Y;
 
-            _health = (int) Type;
+            Health = (int)Type;
         }
     }
 }

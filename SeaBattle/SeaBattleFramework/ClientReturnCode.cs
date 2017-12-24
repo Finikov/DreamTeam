@@ -11,7 +11,7 @@
         CheckingSessionStatus,
         ShotResult,
         GetGrid,
-        WaitforYourTurn,
+        WaitForYourTurn,
         Finish,
         GridIsFilling
     }

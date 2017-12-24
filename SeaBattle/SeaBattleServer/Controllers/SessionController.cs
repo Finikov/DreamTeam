@@ -178,7 +178,7 @@ namespace SeaBattleServer.Controllers
                         };
                     return new Message
                     {
-                        ReturnCode = (short)ClientReturnCode.WaitforYourTurn
+                        ReturnCode = (short)ClientReturnCode.WaitForYourTurn
                     };
                 }
 

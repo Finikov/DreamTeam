@@ -39,9 +39,10 @@ namespace SeaBattleServer.Controllers
                                 ErrorCode = (short) ClientErrorCode.OperationDenied,
                                 DebugMessage = "User's profile wasn't found"
                             };
+
                         var para = new Dictionary<byte, object>
                         {
-                            {(byte) ClientParameterCode.Profile, ClientUserProfile.MakeUserProfile(userList[0])}
+                            {(byte) ClientParameterCode.Profile, JsonConvert.SerializeObject(ClientUserProfile.MakeUserProfile(userList[0]))}
                         };
                         return new Message {Parameters = para, ReturnCode = (short) ClientReturnCode.ProfileSended};
                     }

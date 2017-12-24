@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using SeaBattleFramework;
 
 namespace SeaBattle
 {
@@ -19,11 +18,8 @@ namespace SeaBattle
         private Grid _player1EnemyField = new Grid();
         private Grid _player2EnemyField = new Grid();
 
-        public Player Player1 = null;//new Player();
-        public Player Player2 = null;//new Player();
-        public Player CurrentTurn = null;
-
-        public bool Complexity = false;
+        public Player Player1 = new Player();
+        public Player Player2 = new Player();
 
         public Tuple<Grid,Grid> GetGridInfo(Guid peerId)
         {
@@ -83,34 +79,99 @@ namespace SeaBattle
                 throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
 
             Grid field = (peerId == Player1.PeerId) ? _player1Field : _player2Field;
-            field.RemoveShip(field.GridCells[p.X, p.Y].ShipId);
+            field.RemoveShip(field.grid[p.X, p.Y].ShipId);
         }
 
-        public GridCell[,] ShotPlayer(Point p, Guid peerId)
+        public ShotResult ShotPlayer(Point p, Guid peerId)
         {
             if (peerId != Player1.PeerId && peerId != Player2.PeerId)
                 throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
 
             Grid field = (peerId == Player1.PeerId) ? _player2Field : _player1Field;
             Grid fieldEnemy = (peerId == Player1.PeerId) ? _player1EnemyField : _player2EnemyField;
-            
 
-            switch (field.Shot(p, Complexity))
+            var res = field.Shot(p);
+            switch (res)
             {
                 case ShotResult.Hit:
-                    fieldEnemy.GridCells[p.X, p.Y].State = GridState.Damaged;
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Damaged;
                     break;
                 case ShotResult.Kill:
-                    Ship ship = field.FindShip(field.GridCells[p.X, p.Y].ShipId);
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Damaged;
+                    Ship ship = field.FindShip(field.grid[p.X, p.Y].ShipId);
                     fieldEnemy.AddShip(ship);
-                    fieldEnemy.KillShip(ship, Complexity);
+                    fieldEnemy.KillShipArea(ship);
                     break;
                 case ShotResult.Miss:
-                    fieldEnemy.GridCells[p.X, p.Y].State = GridState.Miss;
-                    CurrentTurn = (peerId == Player1.PeerId) ? Player2 : Player1;
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Miss;
                     break;
             }
-            return fieldEnemy.GridCells;
+
+            return res;
+        }
+
+        public ShotResult ShotPlayerLevlUp(Point p, Guid peerId)
+        {
+            if (peerId != Player1.PeerId && peerId != Player2.PeerId)
+                throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
+
+            Grid field = (peerId == Player1.PeerId) ? _player2Field : _player1Field;
+            Grid fieldEnemy = (peerId == Player1.PeerId) ? _player1EnemyField : _player2EnemyField;
+
+            var res = field.ShotLevlUp(p);
+            switch (res)
+            {
+                case ShotResult.Hit:
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Damaged;
+                    break;
+                case ShotResult.Kill:
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Damaged;
+                    Ship ship = field.FindShip(field.grid[p.X, p.Y].ShipId);
+                    fieldEnemy.AddShip(ship);
+                    break;
+                case ShotResult.Miss:
+                    fieldEnemy.grid[p.X, p.Y].State = GridState.Miss;
+                    break;
+            }
+
+            return res;
+        }
+    }
+
+    public class GameCtxProvider
+    {
+        private static GameCtxProvider _instance;
+        private Dictionary<Guid, Game> _sessions = new Dictionary<Guid, Game>();
+
+        public static GameCtxProvider Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new GameCtxProvider();
+                return _instance;
+            }
+        }
+
+        public Guid CreateNewSession()
+        {
+            Guid id = Guid.NewGuid();
+            _sessions.Add(id, new Game());
+            return id;
+        }
+
+        public void CloseSession(Guid id)
+        {
+            if (!_sessions.Remove(id))
+                throw GameException.MakeExeption(GameErrorCode.InvalidSession, "There isn't game session with id:" + id);
+        }
+
+        public Game GetSession(Guid id)
+        {
+            if (!_sessions.TryGetValue(id, out Game session))
+                throw GameException.MakeExeption(GameErrorCode.InvalidSession, "There isn't game session with id:" + id);
+
+            return session;
         }
     }
 }

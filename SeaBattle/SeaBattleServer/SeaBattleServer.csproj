@@ -189,10 +189,7 @@
     <Compile Include="Controllers\DefaultController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
-    <Compile Include="Controllers\LogoutController.cs" />
-    <Compile Include="Controllers\MatchMakingController.cs" />
     <Compile Include="Controllers\RegisterController.cs" />
-    <Compile Include="Controllers\SessionController.cs" />
     <Compile Include="Controllers\UserProfileController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
@@ -208,7 +205,7 @@
     <Compile Include="SubServerCommon\Exceptions\ServerException.cs" />
     <Compile Include="SubServerCommon\NHibernateHelper.cs" />
     <Compile Include="SubServerCommon\Server.cs" />
-    <Compile Include="SubServerCommon\Session.cs" />
+    <Compile Include="SubServerCommon\SubOperationCode.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />

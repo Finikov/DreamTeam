@@ -26,7 +26,7 @@ namespace SeaBattleServer.Controllers
                 if(username == "" || password == "")
                     return new Message
                     {
-                        ErrorCode = (short)ClientErrorCode.OperationDenied,
+                        ReturnCode = (short)ErrorCode.OperationDenied,
                         DebugMessage = "All fields are required"
                     };
 
@@ -40,7 +40,7 @@ namespace SeaBattleServer.Controllers
                             transaction.Commit();
                             return new Message
                             {
-                                ErrorCode = (short) ClientErrorCode.UsernameInUse,
+                                ReturnCode = (short) ErrorCode.UsernameInUse,
                                 DebugMessage = "Account name already in use"
                             };
                         }
@@ -71,14 +71,14 @@ namespace SeaBattleServer.Controllers
                         }
                     }
                 }
-                return new Message { ReturnCode = (short) ClientReturnCode.UserCreated };
+                return new Message { ReturnCode = (short)ClientReturnCode.UserCreated };
             }
             catch (Exception e)
             {
                 // TODO: добавить LogDebug 
                 return new Message
                 {
-                    ErrorCode = (short) ClientErrorCode.OperationInvalid,
+                    ReturnCode = (short) ErrorCode.OperationInvalid,
                     DebugMessage = e.Message
                 };
             }

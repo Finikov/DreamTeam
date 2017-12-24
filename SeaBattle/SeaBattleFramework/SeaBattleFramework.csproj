@@ -42,16 +42,10 @@
     <Compile Include="ClientCommandCode.cs" />
     <Compile Include="ClientParameterCode.cs" />
     <Compile Include="ClientReturnCode.cs" />
-    <Compile Include="ClientErrorCode.cs" />
-    <Compile Include="ClientSubServerCode.cs" />
-    <Compile Include="GameStatus.cs" />
-    <Compile Include="IGrid.cs" />
+    <Compile Include="ErrorCode.cs" />
     <Compile Include="IMessage.cs" />
-    <Compile Include="Ship.cs" />
     <Compile Include="IUserProfile.cs" />
-    <Compile Include="Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

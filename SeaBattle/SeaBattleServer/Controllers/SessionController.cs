@@ -162,6 +162,24 @@ namespace SeaBattleServer.Controllers
                 var sessionId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.SessionId].ToString());
                 var session = Server.Sessions.Find(s => s.Id == sessionId);
 
+                if (session.Status == GameStatus.Started)
+                {
+                    session.Game.Winner = (peerId == session.Game.Player1.PeerId)
+                        ? session.Game.Player2
+                        : session.Game.Player1;
+                    var mes = new Message()
+                    {
+                        ReturnCode = (short)ClientReturnCode.Finish,
+                        Parameters = new Dictionary<byte, object>
+                        {
+                            {(byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells},
+                            {(byte) ClientParameterCode.Finish, session.Game.Winner}
+                        }
+                    };
+                    session.CloseSession(peerId);
+                    return mes;
+
+                }
                 session.CloseSession(peerId);
                 
                 return new Message()

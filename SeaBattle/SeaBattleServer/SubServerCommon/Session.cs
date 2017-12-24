@@ -85,7 +85,7 @@ namespace SeaBattleServer.SubServerCommon
         public void CloseSession(Guid peerId)
         {
             if (Status == GameStatus.Started)
-                RemovePlayer(peerId);
+                FinishSession();
             if (Status == GameStatus.FindingOpponent)
             {
                 Status = GameStatus.Finished;

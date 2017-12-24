@@ -12,6 +12,7 @@
         ShotResult,
         GetGrid,
         WaitforYourTurn,
-        Finish
+        Finish,
+        GridIsFilling
     }
 }

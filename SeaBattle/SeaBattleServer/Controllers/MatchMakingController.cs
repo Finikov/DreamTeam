@@ -29,24 +29,45 @@ namespace SeaBattleServer.Controllers
                         DebugMessage = "User with peerId:" + peerId + " wasn't found"
                     };
 
+                Message requestMsg;
+                Guid sessionId;
                 var sessions = Server.Sessions.Where(s => s.Status == GameStatus.FindingOpponent).ToList();
                 if (sessions.Count == 0)
                 {
-                    var sessionId = Server.CreateNewSession();
+                    sessionId = Server.CreateNewSession();
                     Server.Sessions.First(s => s.Id == sessionId).AddPlayer(peerId);
-                    return new Message
+                    requestMsg = new Message
                     {
                         ReturnCode = (short) ClientReturnCode.FindingOpponent,
                         Parameters = new Dictionary<byte, object> {{(byte) ClientParameterCode.SessionId, sessionId}}
                     };
                 }
-
-                sessions[0].AddPlayer(peerId);
-                return new Message
+                else
                 {
-                    ReturnCode = (short) ClientReturnCode.GameWasFound,
-                    Parameters = new Dictionary<byte, object> {{(byte) ClientParameterCode.SessionId, sessions[0].Id}}
-                };
+                    sessionId = sessions[0].Id;
+                    sessions[0].AddPlayer(peerId);
+                    requestMsg = new Message
+                    {
+                        ReturnCode = (short) ClientReturnCode.GameWasFound,
+                        Parameters =
+                            new Dictionary<byte, object> {{(byte) ClientParameterCode.SessionId, sessions[0].Id}}
+                    };
+                }
+
+                if (msg.Parameters.ContainsKey((byte) ClientParameterCode.ListShips))
+                {
+                    var jsonListShips = msg.Parameters[(byte) ClientParameterCode.ListShips].ToString();
+                    var ships = JsonConvert.DeserializeObject<List<Ship>>(jsonListShips);
+
+                }
+                else
+                {
+                    Session session = Server.Sessions.Where(s => s.Id == sessionId).ToList()[0];
+                    session.Game.AutoFilling(peerId);
+                    requestMsg.Parameters.Add((byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells);
+                }
+
+                return requestMsg;
             }
             catch (Exception e)
             {

@@ -14,7 +14,7 @@ namespace SeaBattle
    public class Grid : IGrid
     {
         public int MaxShips { get; set; } = 10;
-        public List<SeaBattleFramework.Ship> Ships { get; set; } = new List<SeaBattleFramework.Ship>();
+        public List<Ship> Ships { get; set; } = new List<Ship>();
         public GridCell[,] GridCells { get; set; } = new GridCell[10, 10];
 
         public Grid()

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using NHibernate.Dialect.Function;
@@ -58,16 +59,14 @@ namespace SeaBattle
                         continue;
                     }
 
-                    if (GridCells[j, i].State == GridState.Damaged && GridCells[j, i].ShipId == null)
+                    if (GridCells[j, i].State == GridState.Damaged)
                     {
                         Console.Write("X");
                         continue;
                     }
 
-                    if (FindShip(GridCells[j,i].ShipId).Status == ShipStatus.Destroyed)
+                    if (GridCells[j, i].State == GridState.Destroyed)
                         Console.Write("=");
-                    else
-                        Console.Write("X");
                 }
                 Console.WriteLine("");
             }
@@ -145,9 +144,8 @@ namespace SeaBattle
                 throw GameException.MakeExeption(GameErrorCode.InvalidPosition, "Shot point is off-field");
 
             GridCell cell = GridCells[point.X, point.Y];
-            if (cell.State == GridState.Damaged || cell.State == GridState.Miss)
+            if (cell.State == GridState.Damaged || cell.State == GridState.Miss || cell.State == GridState.Destroyed)
                 throw GameException.MakeExeption(GameErrorCode.RuleError, "This point has already been shooted.");
-
 
             GridCells[point.X, point.Y].State = (cell.ShipId == null) ? GridState.Miss : GridState.Damaged;
 
@@ -156,8 +154,7 @@ namespace SeaBattle
                 var ship = Ships.Find(s => s.Id == cell.ShipId);
                 if (ship.Injury() == ShipStatus.Destroyed)
                 {
-                    if(!complexity)
-                        KillShipArea(ship);
+                    KillShip(ship, complexity);
                     return ShotResult.Kill;
                 }
                 return ShotResult.Hit;
@@ -192,17 +189,29 @@ namespace SeaBattle
             return Tuple.Create(first, last);
         }
 
+        
         // TODO: Обдумать, какой аргумент лучше передавать: Id or Ship
-        public void KillShipArea(Ship ship)
+        public void KillShip(Ship ship, bool complexity)
         {
             if (ship == null)
                 throw GameException.MakeExeption(GameErrorCode.InvalidShip, "Ship was not found.");
 
-            var points = GetShipArea(ship.Position);
+            Point start, end;
+            if (!complexity)
+            {
+                var points = GetShipArea(ship.Position);
+                start = points.Item1;
+                end = points.Item2;
+            }
+            else
+            {
+                start = ship.Position.First();
+                end = ship.Position.Last();
+            }
 
-            for (int k= points.Item1.X; k <= points.Item2.X; k++)
-                 for (int j = points.Item1.Y; j <= points.Item2.Y; j++)
-                     GridCells[k, j].State = (GridCells[k,j].ShipId == null) ? GridState.Miss : GridState.Damaged;
+            for (int k = start.X; k <= end.X; k++)
+            for (int j = start.Y; j <= end.Y; j++)
+                GridCells[k, j].State = (GridCells[k, j].ShipId == null) ? GridState.Miss : GridState.Destroyed;
 
         }
 

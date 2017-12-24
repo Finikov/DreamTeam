@@ -86,7 +86,7 @@ namespace SeaBattle
             field.RemoveShip(field.GridCells[p.X, p.Y].ShipId);
         }
 
-        public ShotResult ShotPlayer(Point p, Guid peerId)
+        public GridCell[,] ShotPlayer(Point p, Guid peerId)
         {
             if (peerId != Player1.PeerId && peerId != Player2.PeerId)
                 throw GameException.MakeExeption(GameErrorCode.InvalidSession, "Unkown player with peerId = " + peerId);
@@ -95,25 +95,22 @@ namespace SeaBattle
             Grid fieldEnemy = (peerId == Player1.PeerId) ? _player1EnemyField : _player2EnemyField;
             
 
-            var res = field.Shot(p, Complexity);
-            switch (res)
+            switch (field.Shot(p, Complexity))
             {
                 case ShotResult.Hit:
                     fieldEnemy.GridCells[p.X, p.Y].State = GridState.Damaged;
                     break;
                 case ShotResult.Kill:
-                    fieldEnemy.GridCells[p.X, p.Y].State = GridState.Damaged;
                     Ship ship = field.FindShip(field.GridCells[p.X, p.Y].ShipId);
                     fieldEnemy.AddShip(ship);
-                    if (!Complexity)
-                        fieldEnemy.KillShipArea(ship);
+                    fieldEnemy.KillShip(ship, Complexity);
                     break;
                 case ShotResult.Miss:
                     fieldEnemy.GridCells[p.X, p.Y].State = GridState.Miss;
                     CurrentTurn = (peerId == Player1.PeerId) ? Player2 : Player1;
                     break;
             }
-            return res;
+            return fieldEnemy.GridCells;
         }
     }
 }

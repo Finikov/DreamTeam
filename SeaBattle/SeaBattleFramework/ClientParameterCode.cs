@@ -10,6 +10,8 @@
         Profile,
         SessionId,
         SessionStatus,
-        ShotPosition
+        ShotPosition,
+        Grid,
+        EnemyGrid
     }
 }

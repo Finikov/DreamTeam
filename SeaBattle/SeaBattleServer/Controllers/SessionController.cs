@@ -65,11 +65,15 @@ namespace SeaBattleServer.Controllers
                 var sessionId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.SessionId].ToString());
                 var session = Server.Sessions.Find(s => s.Id == sessionId);
 
-                session.Game.ShotPlayer(point, peerId);
+                var field = session.Game.ShotPlayer(point, peerId);
 
                 return new Message
                 {
-                    
+                    ReturnCode = (short)ClientReturnCode.ShotResult,
+                    Parameters = new Dictionary<byte, object>
+                    {
+                        {(byte) ClientParameterCode.EnemyGrid, field}
+                    }
                 };
 
             }
@@ -82,6 +86,43 @@ namespace SeaBattleServer.Controllers
                 };
             }
             
+        }
+
+        [Route("CheckTurn")]
+        [HttpGet]
+        public Message CheckTurn(string data)
+        {
+            try
+            {
+                Message msg = JsonConvert.DeserializeObject<Message>(data);
+                var peerId = Guid.Parse(msg.Parameters[(byte) ClientParameterCode.PeerId].ToString());
+                var sessionId = Guid.Parse(msg.Parameters[(byte) ClientParameterCode.SessionId].ToString());
+                var session = Server.Sessions.Find(s => s.Id == sessionId);
+
+                if (session.Game.CurrentTurn.PeerId == peerId)
+                    return new Message
+                    {
+                        ReturnCode = (short) ClientReturnCode.Gridfield,
+                        Parameters = new Dictionary<byte, object>
+                        {
+                            {(byte) ClientParameterCode.Grid, session.Game.GetGridInfo(peerId).Item1.GridCells}
+                        }
+                    };
+
+                return new Message
+                {
+                    ReturnCode = (short) ClientReturnCode.WaitforYourTurn
+                };
+            }
+            catch (Exception e)
+            {
+                return new Message
+                {
+                    ErrorCode = (short) ClientErrorCode.OperationInvalid,
+                    DebugMessage = e.Message
+                };
+           }
+
         }
     }
 }

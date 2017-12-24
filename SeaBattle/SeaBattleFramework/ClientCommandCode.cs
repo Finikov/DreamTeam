@@ -12,6 +12,8 @@ namespace SeaBattleFramework
         GetUserProfile,
         Logout,
         FindMatch,
-        CheckSesssionStatus
+        CheckSesssionStatus,
+        Shot,
+        CheckTurn
     }
 }

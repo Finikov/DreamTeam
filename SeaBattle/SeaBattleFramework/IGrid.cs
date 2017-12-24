@@ -9,8 +9,8 @@ namespace SeaBattleFramework
     {
         Unbroken,
         Damaged,
-        Miss
-        // Destroyed
+        Miss,
+        Destroyed
     }
 
     public struct GridCell

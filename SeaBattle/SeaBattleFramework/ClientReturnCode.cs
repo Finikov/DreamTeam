@@ -8,6 +8,9 @@
         ProfileSended,
         FindingOpponent,
         GameWasFound,
-        CheckingSessionStatus
+        CheckingSessionStatus,
+        ShotResult,
+        Gridfield,
+        WaitforYourTurn
     }
 }

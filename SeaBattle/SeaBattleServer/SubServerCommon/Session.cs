@@ -69,17 +69,24 @@ namespace SeaBattleServer.SubServerCommon
             }
         }
 
-        public void FinishSession()
+        public void FinishSession(Guid peerId)
         {
-            if (CheckSendFinish == 0)
+            if (Status == GameStatus.Started)
+                if (CheckSendFinish == 0)
+                {
+                    Game.Player1 = null;
+                    Game.Player2 = null;
+                    Status = GameStatus.Finished;
+                    Server.CloseSession(Id);
+                }
+                else
+                    CheckSendFinish -= 1;
+
+            if (Status == GameStatus.FindingOpponent)
             {
-                Game.Player1 = null;
-                Game.Player2 = null;
-                Status = GameStatus.Finished;
-                Game = null;
+                RemovePlayer(peerId);
+                Server.CloseSession(Id);
             }
-            else
-                CheckSendFinish -= 1;
         }
     }
 }

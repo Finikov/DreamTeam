@@ -86,7 +86,7 @@ namespace SeaBattleServer.Controllers
                         {(byte) ClientParameterCode.Finish, session.Game.Winner}
                     }
                 };
-                session.FinishSession();
+                session.FinishSession(peerId);
                 return mes;
             }
             catch (Exception e)
@@ -137,8 +137,38 @@ namespace SeaBattleServer.Controllers
                             {(byte) ClientParameterCode.Finish, session.Game.Winner}
                         }
                 };
-                session.FinishSession();
+                session.FinishSession(peerId);
                 return mes;
+            }
+            catch (Exception e)
+            {
+                return new Message
+                {
+                    ErrorCode = (short)ClientErrorCode.OperationInvalid,
+                    DebugMessage = e.Message
+                };
+            }
+
+        }
+
+        [Route("CloseSession")]
+        [HttpGet]
+        public Message CloseSession(string data)
+        {
+            try
+            {
+                Message msg = JsonConvert.DeserializeObject<Message>(data);
+                var peerId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.PeerId].ToString());
+                var sessionId = Guid.Parse(msg.Parameters[(byte)ClientParameterCode.SessionId].ToString());
+                var session = Server.Sessions.Find(s => s.Id == sessionId);
+
+                session.FinishSession(peerId);
+                
+
+                return new Message()
+                {
+                    ReturnCode = (short) ClientReturnCode.NoCode
+                };
             }
             catch (Exception e)
             {

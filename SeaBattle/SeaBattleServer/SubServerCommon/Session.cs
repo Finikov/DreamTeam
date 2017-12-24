@@ -18,7 +18,7 @@ namespace SeaBattleServer.SubServerCommon
         {
             Id = id;
             Status = GameStatus.Empty;
-            CheckSendFinish = 2;
+            CheckSendFinish = 1;
             Game = new Game();
         }
 

@@ -26,8 +26,15 @@ namespace SeaBattleServer.Controllers
                 var sessions = Server.Sessions.Where(s => s.Game.Player1.PeerId == peerId || s.Game.Player2.PeerId == peerId).ToList();
                 if (sessions.Count > 0)
                     foreach (var session in sessions)
-                        session.RemovePlayer(peerId);
-
+                    {
+                        if (session.Status == GameStatus.Started)
+                        {
+                            session.Game.Winner = (peerId == session.Game.Player1.PeerId)
+                                ? session.Game.Player2
+                                : session.Game.Player1;
+                        }
+                        session.CloseSession();
+                    }
 
                 Server.Users.Remove(peerId);
                 

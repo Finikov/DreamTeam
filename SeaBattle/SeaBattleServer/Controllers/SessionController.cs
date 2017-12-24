@@ -167,18 +167,23 @@ namespace SeaBattleServer.Controllers
 
                 if (session.Game.Winner == Guid.Empty)
                 {
+                    var para = new Dictionary<byte, object>
+                    {
+                        {
+                            (byte) ClientParameterCode.Grid,
+                            JsonConvert.SerializeObject(session.Game.GetGridInfo(peerId).Item1.GridCells)
+                        }
+                    };
                     if (session.Game.CurrentTurn == peerId)
                         return new Message
                         {
                             ReturnCode = (short)ClientReturnCode.GetGrid,
-                            Parameters = new Dictionary<byte, object>
-                            {
-                                {(byte) ClientParameterCode.Grid, JsonConvert.SerializeObject(session.Game.GetGridInfo(peerId).Item1.GridCells)}
-                            }
+                            Parameters = para
                         };
                     return new Message
                     {
-                        ReturnCode = (short)ClientReturnCode.WaitForYourTurn
+                        ReturnCode = (short)ClientReturnCode.WaitForYourTurn,
+                        Parameters = para
                     };
                 }
 

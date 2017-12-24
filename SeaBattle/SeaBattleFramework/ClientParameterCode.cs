@@ -7,11 +7,6 @@
         Password,
         SubOperationCode,
         PeerId,
-        Profile,
-        SessionId,
-        SessionStatus,
-        ShotPosition,
-        Grid,
-        EnemyGrid
+        Profile
     }
 }

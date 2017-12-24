@@ -8,7 +8,7 @@ namespace SeaBattleServer.SubServerCommon.Exceptions
     public enum ServerErrorCode
     {
         InvalidUser,
-        InvalidSession,
+
     }
 
     public class ServerException : Exception

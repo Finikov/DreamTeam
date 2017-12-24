@@ -2,21 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using SeaBattle;
 using SeaBattleServer.SubServerCommon.Data.NHibernate;
 using SeaBattleServer.SubServerCommon.Exceptions;
 
 namespace SeaBattleServer.SubServerCommon
 {
-
     public static class Server
     {
-        public static Dictionary<Guid, int> Users = new Dictionary<Guid, int>();
-        public static List<Session> Sessions = new List<Session>();
+        private static Dictionary<Guid, int> _users = new Dictionary<Guid, int>();
 
         public static int GetUser(Guid peerId)
         {
-            if (Users.TryGetValue(peerId, out int userId))
+            if (_users.TryGetValue(peerId, out int userId))
                 return userId;
             throw new ServerException
             {
@@ -28,40 +25,18 @@ namespace SeaBattleServer.SubServerCommon
         public static Guid AddUser(int userId)
         {
             Guid peerId = Guid.NewGuid();
-            Users.Add(peerId, userId);
+            _users.Add(peerId, userId);
             return peerId;
         }
 
-        public static Guid CreateNewSession()
+        public static bool ContainsUser(Guid peerId)
         {
-            Guid id = Guid.NewGuid();
-            Session session = new Session(id);
-            Sessions.Add(session);
-            return id;
+            return _users.ContainsKey(peerId);
         }
 
-        public static void CloseSession(Guid id)
+        public static bool ContainsUser(int userId)
         {
-            var cnt = Sessions.RemoveAll(s => s.Id == id);
-            if (cnt == 0)
-                throw new ServerException
-                {
-                    ErrorCode = ServerErrorCode.InvalidSession,
-                    ErrorText = "There isn't game session with id:" + id
-                };
-        }
-
-        public static Session GetSession(Guid id)
-        {
-            var session = Sessions.Find(s => s.Id == id);
-            if (session == null)
-                throw new ServerException
-                {
-                    ErrorCode = ServerErrorCode.InvalidSession,
-                    ErrorText = "There isn't game session with id:" + id
-                };
-
-            return session;
+            return _users.ContainsValue(userId);
         }
     }
 }

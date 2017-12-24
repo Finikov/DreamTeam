@@ -7,5 +7,6 @@ namespace SeaBattleFramework
         Dictionary<byte, object> Parameters { get; set; }
         string DebugMessage { get; set; }
         short ReturnCode { get; set; }
+        short ErrorCode { get; set; }
     }
 }

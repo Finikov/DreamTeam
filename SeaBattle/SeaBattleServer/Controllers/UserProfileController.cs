@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using Newtonsoft.Json;
 using SeaBattleFramework;
 using SeaBattleServer.Models;
 using SeaBattleServer.SubServerCommon;
@@ -16,12 +17,13 @@ namespace SeaBattleServer.Controllers
     {
         [Route("GetUserProfile")]
         [HttpGet]
-        public Message GetUserProfile([FromBody] Message msg)
+        public Message GetUserProfile(string data)
         {
             try
             {
-                var peerId = (Guid)msg.Parameters[(byte)ClientParameterCode.PeerId];
-                //var peerId = Guid.Parse(msg.Parameters[(byte) ClientParameterCode.PeerId].ToString());
+                //var peerId = (Guid)msg.Parameters[(byte)ClientParameterCode.PeerId];
+                Message msg = JsonConvert.DeserializeObject<Message>(data);
+                var peerId = Guid.Parse(msg.Parameters[(byte) ClientParameterCode.PeerId].ToString());
                 var userId = Server.GetUser(peerId);
 
                 using (var sessions = NHibernateHelper.OpenSession())
@@ -34,14 +36,14 @@ namespace SeaBattleServer.Controllers
                             return new Message
                             {
                                 Parameters = msg.Parameters,
-                                ReturnCode = (short) ErrorCode.OperationDenied,
+                                ErrorCode = (short) ClientErrorCode.OperationDenied,
                                 DebugMessage = "User's profile wasn't found"
                             };
                         var para = new Dictionary<byte, object>
                         {
                             {(byte) ClientParameterCode.Profile, ClientUserProfile.MakeUserProfile(userList[0])}
                         };
-                        return new Message {Parameters = para, ReturnCode = (short) ErrorCode.Ok};
+                        return new Message {Parameters = para, ReturnCode = (short) ClientReturnCode.ProfileSended};
                     }
                 }
             }
@@ -49,7 +51,7 @@ namespace SeaBattleServer.Controllers
             {
                 return new Message
                 {
-                    ReturnCode = (short)ErrorCode.OperationInvalid,
+                    ErrorCode = (short)ClientErrorCode.OperationInvalid,
                     DebugMessage = e.Message
                 };
             }
